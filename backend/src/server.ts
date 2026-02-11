@@ -35,11 +35,23 @@ connectDB();
 app.use(helmet());
 
 // CORS
-const corsOptions = {
-  origin: ['https://empregaai-production.up.railway.app' , 'http://localhost:3000'],
-  credentials: true,
-};
-app.use(cors(corsOptions));
+
+
+// ... (outras configurações)
+
+app.use(cors({
+  origin: [
+    'https://www.pablito.my',     // Seu domínio oficial
+    'https://pablito.my',         // Variante sem www
+    'https://empregaai.vercel.app' // Seu link da vercel para testes
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// As suas rotas vêm DEPOIS do app.use(cors)
+app.use('/auth', authRoutes);
 
 // Compressão de respostas
 app.use(compression());
