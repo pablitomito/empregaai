@@ -36,7 +36,7 @@ app.use(helmet());
 
 // CORS
 const corsOptions = {
-  origin: ['empregaai-production.up.railway.app' , 'http://localhost:3000'],
+  origin: ['https://empregaai-production.up.railway.app' , 'http://localhost:3000'],
   credentials: true,
 };
 app.use(cors(corsOptions));
