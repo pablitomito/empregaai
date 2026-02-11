@@ -11,12 +11,14 @@ const PORT = process.env.PORT || 5000;
 // ============================================
 // CORS - CRUCIAL! 🔥
 // ============================================
+// server.ts - Localize a lista allowedOrigins
 const allowedOrigins = [
   'http://localhost:3000',
   'https://empregaai.vercel.app',
-  'https://www.empregaai.vercel.app'
+  'https://www.empregaai.vercel.app',
+  'https://www.pablito.my', // Adicione o seu domínio principal aqui
+  'https://pablito.my'       // Adicione também a versão sem o 'www'
 ];
-
 app.use(cors({
   origin: function(origin, callback) {
     // Permitir requisições sem origin (Postman, mobile)
@@ -73,6 +75,9 @@ app.get('/api/health', (req: Request, res: Response) => {
 // ============================================
 // ROTA DE REGISTRO (TEMPORÁRIA PARA TESTE)
 // ============================================
+// Adicione isso no seu server.ts antes das rotas
+import authRoutes from './routes/authRoutes';
+app.use('/api/auth', authRoutes); // Agora suas rotas terão o prefixo /api/auth
 app.post('/api/auth/register', (req: Request, res: Response) => {
   try {
     console.log('📝 Tentativa de registro:', req.body);
