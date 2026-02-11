@@ -131,7 +131,7 @@ export default function CadastroPage() {
       // Substitua o bloco do axios por este aqui, que força uma instância limpa:
 const response = await axios({
   method: 'post',
-  url: 'https://empregaai-production.up.railway.app/auth/register',
+  url: 'https://empregaai-production.up.railway.app/api/auth/register',
   data: {
     fullName: `${formData.firstName} ${formData.lastName}`,
     email: formData.email,
