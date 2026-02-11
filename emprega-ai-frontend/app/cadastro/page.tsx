@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { signIn } from 'next-auth/react';
 import { 
   Sparkles, 
   CheckCircle, 
@@ -127,14 +128,18 @@ export default function CadastroPage() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-        {
-          fullName: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          password: formData.password,
-        }
-      );
+      // Substitua o bloco do axios por este aqui, que força uma instância limpa:
+const response = await axios({
+  method: 'post',
+  url: 'https://empregaai-production.up.railway.app/auth/register',
+  data: {
+    fullName: `${formData.firstName} ${formData.lastName}`,
+    email: formData.email,
+    password: formData.password,
+  },
+  // Isso impede que o axios use qualquer configuração de base
+  baseURL: '' 
+});
 
       // Salvar token
       localStorage.setItem('token', response.data.data.token);
@@ -155,7 +160,7 @@ export default function CadastroPage() {
 
   // Login com Google
   const handleGoogleLogin = () => {
-    alert('Login com Google em breve! 🚀');
+  signIn('google', { callbackUrl: '/onboarding/objetivo' });
   };
 
   return (
