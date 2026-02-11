@@ -119,22 +119,20 @@ app.use(errorHandler);
 // INICIAR SERVIDOR
 // ============================================================================
 
-const PORT = process.env.PORT || 5000;
+// 1. Convertemos para número e garantimos que o Railway use a porta dele
+const PORT = Number(process.env.PORT) || 5000;
 
-const server = app.listen(PORT, () => {
+// 2. Criamos a instância do servidor APENAS UMA VEZ
+app.listen(PORT, "0.0.0.0", () => {
   console.log('');
   console.log('╔════════════════════════════════════════════╗');
-  console.log('║                                            ║');
   console.log('║        🚀 EMPREGA.AI - Backend API 🚀      ║');
-  console.log('║                                            ║');
   console.log('╠════════════════════════════════════════════╣');
-  console.log(`║  Servidor rodando na porta: ${PORT}           ║`);
-  console.log(`║  Ambiente: ${process.env.NODE_ENV || 'development'}              ║`);
-  console.log(`║  URL: http://localhost:${PORT}              ║`);
+  console.log(`║  Status: ONLINE                            ║`);
+  console.log(`║  Porta: ${PORT.toString().padEnd(34)} ║`);
   console.log('╚════════════════════════════════════════════╝');
   console.log('');
 });
-
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('👋 SIGTERM recebido. Fechando servidor...');
