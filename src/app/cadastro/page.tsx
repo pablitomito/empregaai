@@ -28,12 +28,12 @@ export default function CadastroPage() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
-        fullName: formData.fullName,
-        email: formData.email,
-        password: formData.password,
-      });
-
+     // No seu handleSubmit, mude para:
+const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+  fullName: formData.fullName,
+  email: formData.email,
+  password: formData.password,
+});
       // Salvar token
       localStorage.setItem('token', response.data.data.token);
       
