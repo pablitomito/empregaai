@@ -136,3 +136,11 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Backend is running',
+    timestamp: new Date().toISOString()
+  });
+});
