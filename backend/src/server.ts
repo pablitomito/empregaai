@@ -40,14 +40,9 @@ app.use(helmet());
 // ... (outras configurações)
 
 app.use(cors({
-  origin: [
-    'https://www.pablito.my',     // Seu domínio oficial
-    'https://pablito.my',         // Variante sem www
-    'https://empregaai.vercel.app' // Seu link da vercel para testes
-  ],
+  origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // As suas rotas vêm DEPOIS do app.use(cors)
