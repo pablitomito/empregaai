@@ -21,12 +21,14 @@ import jobRoutes from './routes/jobRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
 import webhookRoutes from './routes/webhookRoutes';
 
+
+
 // Inicializar app
 const app: Application = express();
 
 // Conectar ao MongoDB
 connectDB();
-
+app.use(cors({ origin: '*' }));
 // ============================================================================
 // MIDDLEWARES GLOBAIS
 // ============================================================================
@@ -39,11 +41,7 @@ app.use(helmet());
 
 // ... (outras configurações)
 
-app.use(cors({
-  origin: '*', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+
 
 // As suas rotas vêm DEPOIS do app.use(cors)
 app.use('/auth', authRoutes);
