@@ -131,14 +131,17 @@ export default function CadastroPage() {
       // Substitua o bloco do axios por este aqui, que força uma instância limpa:
 const response = await axios({
   method: 'post',
-  url: 'https://empregaai-production.up.railway.app/auth/register',
+  // ADICIONAMOS O /api/auth QUE ESTAVA FALTANDO
+  url: 'https://empregaai-production.up.railway.app/api/auth/register', 
   data: {
     fullName: `${formData.firstName} ${formData.lastName}`,
     email: formData.email,
     password: formData.password,
   },
-  // Isso impede que o axios use qualquer configuração de base
-  baseURL: '' 
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
       // Salvar token

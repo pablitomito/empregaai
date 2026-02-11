@@ -1,37 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactCompiler: true,
-
-  // ✅ Configuração para permitir imagens externas
-  images: {
-    remotePatterns: [
+  async headers() {
+    return [
       {
-        protocol: 'https',
-        hostname: 'i.imgur.com',
+        // Aplica estas configurações para todas as rotas da API
+        source: "/auth/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Credentials", value: "true" },
+          { key: "Access-Control-Allow-Origin", value: "https://empregaai.vercel.app" },
+          { key: "Access-Control-Allow-Methods", value: "GET,DELETE,PATCH,POST,PUT,OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" },
+        ],
       },
-      {
-        protocol: 'https',
-        hostname: 'upload.wikimedia.org',
-      },
-      {
-        protocol: 'https',
-        hostname: 'seeklogo.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-      },
-      {
-        protocol: 'https',
-        hostname: '**',           // ← Temporário (permite qualquer domínio)
-        // Remova esta linha quando for para produção
-      },
-    ],
-  },
-
-  // Configuração do Turbopack (caso ainda tenha o aviso anterior)
-  turbopack: {
-    root: __dirname,
+    ];
   },
 };
 
