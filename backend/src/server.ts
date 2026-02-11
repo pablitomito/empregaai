@@ -1,161 +1,153 @@
-import express, { Application } from 'express';
-import dotenv from 'dotenv';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
-
-// Configurações
-dotenv.config();
+import dotenv from 'dotenv';
 import connectDB from './config/database';
 
-// Middlewares
-import { errorHandler, notFound } from './middleware/errorHandler';
+dotenv.config();
 
-// Routes
-import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
-import cvRoutes from './routes/cvRoutes';
-import jobRoutes from './routes/jobRoutes';
-import subscriptionRoutes from './routes/subscriptionRoutes';
-import webhookRoutes from './routes/webhookRoutes';
+const app = express();
+const PORT = process.env.PORT || 5000;
 
+// ============================================
+// CORS - CRUCIAL! 🔥
+// ============================================
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://empregaai.vercel.app',
+  'https://www.empregaai.vercel.app'
+];
 
+app.use(cors({
+  origin: function(origin, callback) {
+    // Permitir requisições sem origin (Postman, mobile)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('❌ Origin bloqueada:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
-// Inicializar app
-const app: Application = express();
+// Middleware para requisições OPTIONS (preflight)
+app.options('*', cors());
 
-// Conectar ao MongoDB
-connectDB();
-app.use(cors({ origin: '*' }));
-// ============================================================================
-// MIDDLEWARES GLOBAIS
-// ============================================================================
-
-// Segurança
-app.use(helmet());
-
-// CORS
-
-
-
-// Use o CORS assim para testes agressivos
-app.use(cors()); 
-app.options('*', cors()); // Habilita pre-flight para todas as rotas
-
+// Body parsers
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Adicione um log simples para ver se a requisição chega
-app.post('/auth/register', (req, res, next) => {
-  console.log("Recebi uma tentativa de cadastro!");
+// Logging middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`${req.method} ${req.path} - Origin: ${req.headers.origin || 'none'}`);
   next();
 });
-// ... (outras configurações)
 
-
-
-// As suas rotas vêm DEPOIS do app.use(cors)
-app.use('/auth', authRoutes);
-
-// Compressão de respostas
-app.use(compression());
-
-// Logger (apenas em desenvolvimento)
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 min
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
-  message: 'Muitas requisições deste IP, tente novamente mais tarde.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api', limiter);
-
-// Body parser
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// ============================================================================
+// ============================================
 // ROTAS
-// ============================================================================
+// ============================================
 
-// Health check
-
-
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/cv', cvRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/subscription', subscriptionRoutes);
-app.use('/api/webhooks', webhookRoutes); // Stripe webhooks
-
-// Root
-app.get('/', (_, res) => {
-  res.json({
-    message: 'Bem-vindo à API EMPREGA.AI',
-    version: '1.0.0',
-    documentation: `${process.env.FRONTEND_URL}/docs`,
-  });
-});
-
-
-// ============================================================================
-// ERROR HANDLING
-// ============================================================================
-
-// 404 - Rota não encontrada
-app.use(notFound);
-
-// Error handler global
-app.use(errorHandler);
-
-// ============================================================================
-// INICIAR SERVIDOR
-// ============================================================================
-
-// 1. Convertemos para número e garantimos que o Railway use a porta dele
-const PORT = Number(process.env.PORT) || 5000;
-
-// 2. Criamos a instância do servidor APENAS UMA VEZ
-app.listen(PORT, "0.0.0.0", () => {
-  console.log('');
-  console.log('╔════════════════════════════════════════════╗');
-  console.log('║        🚀 EMPREGA.AI - Backend API 🚀      ║');
-  console.log('╠════════════════════════════════════════════╣');
-  console.log(`║  Status: ONLINE                            ║`);
-  console.log(`║  Porta: ${PORT.toString().padEnd(34)} ║`);
-  console.log('╚════════════════════════════════════════════╝');
-  console.log('');
-});
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('👋 SIGTERM recebido. Fechando servidor...');
-  server.close(() => {
-    console.log('✅ Servidor fechado com sucesso');
-    process.exit(0);
-  });
-});
-
-process.on('SIGINT', () => {
-  console.log('👋 SIGINT recebido. Fechando servidor...');
-  server.close(() => {
-    console.log('✅ Servidor fechado com sucesso');
-    process.exit(0);
-  });
-});
-
-export default app;
-
-app.get('/api/health', (req, res) => {
+// Rota raiz
+app.get('/', (req: Request, res: Response) => {
   res.json({ 
-    status: 'ok', 
-    message: 'Backend is running',
+    message: 'EMPREGA.AI Backend API',
+    status: 'running',
+    version: '1.0.0',
     timestamp: new Date().toISOString()
   });
 });
+
+// Health check
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({ 
+    status: 'ok',
+    database: 'connected',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ============================================
+// ROTA DE REGISTRO (TEMPORÁRIA PARA TESTE)
+// ============================================
+app.post('/api/auth/register', (req: Request, res: Response) => {
+  try {
+    console.log('📝 Tentativa de registro:', req.body);
+    
+    const { fullName, email, password } = req.body;
+    
+    // Validação básica
+    if (!fullName || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Todos os campos são obrigatórios'
+      });
+    }
+    
+    // TEMPORÁRIO: Retornar sucesso sem salvar no banco
+    res.status(200).json({
+      success: true,
+      message: 'Conta criada com sucesso (mock)',
+      data: {
+        user: {
+          id: '123',
+          fullName,
+          email
+        },
+        token: 'mock_token_123'
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erro no registro:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao criar conta'
+    });
+  }
+});
+
+// Rota 404
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ 
+    error: 'Rota não encontrada',
+    path: req.path
+  });
+});
+
+// Error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error('❌ Erro:', err);
+  res.status(500).json({ 
+    error: 'Erro interno do servidor',
+    message: err.message
+  });
+});
+
+// ============================================
+// INICIAR SERVIDOR
+// ============================================
+const startServer = async () => {
+  try {
+    await connectDB();
+    
+    app.listen(PORT, () => {
+      console.log('\n╔════════════════════════════════════════════╗');
+      console.log('║        🚀 EMPREGA.AI - Backend API 🚀      ║');
+      console.log('╠════════════════════════════════════════════╣');
+      console.log(`║  Servidor: http://localhost:${PORT}           ║`);
+      console.log(`║  Ambiente: ${process.env.NODE_ENV || 'development'}                  ║`);
+      console.log('╚════════════════════════════════════════════╝\n');
+      console.log('✅ Origens permitidas:', allowedOrigins);
+    });
+  } catch (error) {
+    console.error('❌ Erro ao iniciar:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
+
+export default app;
