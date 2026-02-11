@@ -39,6 +39,18 @@ app.use(helmet());
 // CORS
 
 
+
+// Use o CORS assim para testes agressivos
+app.use(cors()); 
+app.options('*', cors()); // Habilita pre-flight para todas as rotas
+
+app.use(express.json());
+
+// Adicione um log simples para ver se a requisição chega
+app.post('/auth/register', (req, res, next) => {
+  console.log("Recebi uma tentativa de cadastro!");
+  next();
+});
 // ... (outras configurações)
 
 
