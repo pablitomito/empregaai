@@ -114,16 +114,17 @@ export default function CadastroPage() {
   // Submeter formulário
 // --- SUBSTITUA O SEU BLOCO PELO BLOCO ABAIXO ---
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
+  try {
+    const response = await axios.post(
+      'https://empregaai-api.onrender.com/api/auth/register', // <-- ESTA URL
+      formData
+    );
+    // ...
+  } catch (err) {
+    // ...
+  }
 
-    // 1. Validar campos
-    Object.keys(formData).forEach((key) => {
-      validateField(key, formData[key as keyof typeof formData]);
-    });
-
-    if (Object.keys(errors).length > 0) return;
-
-    setIsLoading(true);
 
     try {
       // 2. Chamada para a API
