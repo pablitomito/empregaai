@@ -318,7 +318,7 @@ export default function CadastroPage() {
           {/* Título */}
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-              Criar conta gratuita
+              TESTE ATUALIZACAO RENDER
             </h1>
             <p className="text-gray-600">
               Junte-se a <strong className="text-blue-600">+15.000 profissionais</strong> que já automatizaram a sua procura de emprego.
