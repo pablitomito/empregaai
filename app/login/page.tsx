@@ -57,9 +57,9 @@ export default function LoginPage() {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-        formData
-      );
+  `https://empregaai-api.onrender.com/api/auth/login`,
+  formData
+);
 
       // Salvar token e dados do usuário
       localStorage.setItem('token', response.data.data.token);
@@ -361,7 +361,7 @@ export default function LoginPage() {
               <p className="text-sm text-gray-600">
                 Ainda não tem conta?{' '}
                 <Link href="/cadastro" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline">
-                  TESTE RENDER
+                  TESTE CADASTRO RENDER
                 </Link>
               </p>
             </div>
