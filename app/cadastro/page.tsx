@@ -127,22 +127,24 @@ export default function CadastroPage() {
 
     setIsLoading(true);
 
-    try {
-      // Substitua o bloco do axios por este aqui, que força uma instância limpa:
-const response = await axios({
-  method: 'post',
-  // ADICIONAMOS O /api/auth QUE ESTAVA FALTANDO
-  url: 'https://https://empregaai-api.onrender.com/app/api/auth/register', 
-  data: {
-    fullName: `${formData.firstName} ${formData.lastName}`,
-    email: formData.email,
-    password: formData.password,
-  },
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+  try {
+  setIsLoading(true);
+
+  const response = await axios({
+    method: 'post',
+    // 1. Removi o https:// duplicado
+    // 2. Removi o /app/ do caminho (servidores Express no Render não costumam usar isso)
+    url: 'https://empregaai-api.onrender.com/api/auth/register', 
+    data: {
+      fullName: `${formData.firstName} ${formData.lastName}`,
+      email: formData.email,
+      password: formData.password,
+    },
+    withCredentials: true,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 
       // Salvar token
       localStorage.setItem('token', response.data.data.token);
