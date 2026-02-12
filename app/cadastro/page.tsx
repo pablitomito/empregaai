@@ -132,7 +132,7 @@ export default function CadastroPage() {
 const response = await axios({
   method: 'post',
   // ADICIONAMOS O /api/auth QUE ESTAVA FALTANDO
-  url: 'https://empregaai-production.up.railway.app/api/auth/register', 
+  url: 'https://https://empregaai-api.onrender.com/app/api/auth/register', 
   data: {
     fullName: `${formData.firstName} ${formData.lastName}`,
     email: formData.email,
