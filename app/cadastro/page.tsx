@@ -112,49 +112,51 @@ export default function CadastroPage() {
   };
 
   // Submeter formulário
+// --- SUBSTITUA O SEU BLOCO PELO BLOCO ABAIXO ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validar todos os campos
+    // 1. Validar campos
     Object.keys(formData).forEach((key) => {
       validateField(key, formData[key as keyof typeof formData]);
     });
 
-    // Se houver erros, não submeter
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
+    if (Object.keys(errors).length > 0) return;
 
     setIsLoading(true);
 
-  try {
-  setIsLoading(true);
+    try {
+      // 2. Chamada para a API
+      const response = await axios({
+        method: 'post',
+        url: 'https://empregaai-api.onrender.com/api/auth/register', 
+        data: {
+          fullName: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          password: formData.password,
+        },
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      });
 
-  const response = await axios({
-    method: 'post',
-    // 1. Removi o https:// duplicado
-    // 2. Removi o /app/ do caminho (servidores Express no Render não costumam usar isso)
-    url: 'https://empregaai-api.onrender.com/api/auth/register', 
-    data: {
-      fullName: `${formData.firstName} ${formData.lastName}`,
-      email: formData.email,
-      password: formData.password,
-    },
-    withCredentials: true,
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+      // 3. Pegar os dados (Versão Segura)
+      const responseData = response.data?.data || response.data;
 
-      // Salvar token
-      localStorage.setItem('token', response.data.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.data.user));
+      // 4. Se tiver o token, salva e entra!
+      if (responseData && (responseData.token || responseData.accessToken)) {
+        const token = responseData.token || responseData.accessToken;
+        const user = responseData.user || responseData;
 
-      // Redirecionar para onboarding
-      router.push('/onboarding/objetivo');
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        router.push('/onboarding/objetivo');
+      } else {
+        throw new Error('Servidor não enviou o token de acesso.');
+      }
       
     } catch (err: any) {
-      console.error('Erro ao criar conta:', err);
+      console.error('Erro detalhado:', err.response?.data || err.message);
       setErrors({
         submit: err.response?.data?.message || 'Erro ao criar conta. Tente novamente.',
       });
@@ -162,7 +164,7 @@ export default function CadastroPage() {
       setIsLoading(false);
     }
   };
-
+  // --- FIM DO BLOCO ---
   // Login com Google
   const handleGoogleLogin = () => {
   signIn('google', { callbackUrl: '/onboarding/objetivo' });
