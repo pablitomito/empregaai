@@ -10,11 +10,11 @@ export async function POST(req: Request) {
     // 2. Pegar os dados que vêm do formulário
     const body = await req.json();
 
-    // 3. Extrair o email do usuário para saber de quem é o currículo
-    // IMPORTANTE: No futuro, você pegará isso da sessão (auth)
-    const { userEmail } = body;
+    // 3. Extrair o email (ajustado para aceitar o que vem do seu front-end)
+    // Tentamos pegar de 'email' (que é o que você envia) ou 'userEmail'
+    const emailFinal = body.email || body.userEmail;
 
-    if (!userEmail) {
+    if (!emailFinal) {
       return NextResponse.json(
         { error: 'O email do usuário é obrigatório' },
         { status: 400 }
@@ -22,11 +22,12 @@ export async function POST(req: Request) {
     }
 
     // 4. Salvar ou Atualizar (Upsert)
-    // Se encontrar o email, atualiza. Se não encontrar, cria um novo.
+    // Usamos o emailFinal para a busca
     const cvAtualizado = await Curriculo.findOneAndUpdate(
-      { userEmail: userEmail },
+      { userEmail: emailFinal }, 
       { 
         ...body, 
+        userEmail: emailFinal, // Garante que o campo no banco seja preenchido
         updatedAt: new Date() 
       },
       { new: true, upsert: true }
