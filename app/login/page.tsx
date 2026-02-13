@@ -62,11 +62,10 @@ export default function LoginPage() {
 );
 
       // Salvar token e dados do usuário
-      localStorage.setItem('token', response.data.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.data.user));
+    localStorage.setItem('token', response.data.data.token);
+localStorage.setItem('user', JSON.stringify(response.data.data.user));
 
-      // Redirecionar para dashboard
-      router.push('/dashboard');
+router.push('/app/dashboard/page.tsx');
       
     } catch (err: any) {
       console.error('Erro ao fazer login:', err);
