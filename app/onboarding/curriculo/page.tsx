@@ -4,7 +4,7 @@ import { useState, FormEvent, KeyboardEvent } from 'react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { PersonalInfo, Experience, Education, Language, CVData } from '../../types/cv.types';
-import styles from '../styles/CriarCurriculo.module.css';
+import styles from '../../styles/CriarCurriculo.module.css';
 import { useSession } from 'next-auth/react'; // Se usar NextAuth
 
 const CriarCurriculo: NextPage = () => {
