@@ -153,7 +153,7 @@ const handleGenerateCV = async (e: any) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         // Isso aqui envia fullName, email, phone, etc., individualmente
-        ...personalInfo, 
+        personalInfo, 
         experiences, 
         education, 
         skills, 
