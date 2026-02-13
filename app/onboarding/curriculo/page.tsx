@@ -145,43 +145,40 @@ const CriarCurriculo: NextPage = () => {
   };
 
   // Generate CV
-  const handleGenerateCV = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleGenerateCV = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const cvData: CVData = {
-      personalInfo,
-      experiences,
-      education,
-      skills,
-      languages
-    };
+  // 1. VALIDAÇÃO SÓ DA EDUCAÇÃO (QUE É O QUE ESTAVA TRAVANDO)
+  const temErroNaFormacao = education.some(
+    (edu: any) => !edu.degree?.trim() || !edu.institution?.trim()
+  );
 
-    console.log('CV Data:', cvData);
+  if (education.length > 0 && temErroNaFormacao) {
+    alert("⚠️ Preencha os campos de formação ou remova a formação vazia.");
+    return;
+  }
 
-    // TODO: Send to API
-    try {
-      const response = await fetch('/api/cvs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${token}` // Se tiver autenticação
-        },
-        body: JSON.stringify(cvData)
-      });
+  // 2. ENVIO DINÂMICO (PARA NÃO DAR ERRO DE NOME DE VARIÁVEL)
+  try {
+    const response = await fetch('/api/auth/curriculo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Aqui enviamos apenas o que você já tem no estado
+      body: JSON.stringify({ 
+        education,
+        // Se você tiver outras variáveis, adicione-as aqui seguindo o seu código
+      }),
+    });
 
-      if (response.ok) {
-        const result = await response.json();
-        alert('✅ Currículo criado com sucesso!');
-        // window.location.href = `/payment?cvId=${result.data._id}`;
-      } else {
-        alert('❌ Erro ao criar currículo');
-      }
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('❌ Erro ao conectar com o servidor');
+    if (response.ok) {
+      router.push('/onboarding/analisando');
+    } else {
+      alert("Erro ao salvar no banco.");
     }
-  };
-
+  } catch (error) {
+    console.error("Erro:", error);
+  }
+};
   return (
     <>
       <Head>
