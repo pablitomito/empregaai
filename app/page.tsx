@@ -55,7 +55,7 @@ export default function LandingPage() {
     { name: "Executive Minimal", color: "from-gray-700 to-gray-900" },
     { name: "Tech Innovator", color: "from-emerald-500 to-teal-500" }
   ];
-
+/// hahahahaha
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
   };
