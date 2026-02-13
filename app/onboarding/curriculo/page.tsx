@@ -144,40 +144,33 @@ const CriarCurriculo: NextPage = () => {
     setLanguages(prev => prev.filter(lang => lang.id !== id));
   };
 
-  // Generate CV
-  const handleGenerateCV = async (e: React.FormEvent) => {
-  e.preventDefault();
+ const handleGenerateCV = async (e: any) => {
+  if (e && e.preventDefault) e.preventDefault();
 
-  // 1. VALIDAÇÃO SÓ DA EDUCAÇÃO (QUE É O QUE ESTAVA TRAVANDO)
-  const temErroNaFormacao = education.some(
-    (edu: any) => !edu.degree?.trim() || !edu.institution?.trim()
-  );
-
-  if (education.length > 0 && temErroNaFormacao) {
-    alert("⚠️ Preencha os campos de formação ou remova a formação vazia.");
-    return;
-  }
-  
-
-  // 2. ENVIO DINÂMICO (PARA NÃO DAR ERRO DE NOME DE VARIÁVEL)
   try {
     const response = await fetch('/api/auth/curriculo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // Aqui enviamos apenas o que você já tem no estado
+      // Usei EXATAMENTE os nomes que você me mandou:
       body: JSON.stringify({ 
-        education,
-        // Se você tiver outras variáveis, adicione-as aqui seguindo o seu código
+        experiences, 
+        education, 
+        skills, 
+        languages 
       }),
     });
 
     if (response.ok) {
       router.push('/onboarding/analisando');
     } else {
-      alert("Erro ao salvar no banco.");
+      // Se der erro, vamos ler o que o servidor diz
+      const errorData = await response.json();
+      console.error("ERRO DO SERVIDOR:", errorData);
+      alert(`Erro: ${errorData.message || 'O servidor recusou os dados.'}`);
     }
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("ERRO NA REQUISIÇÃO:", error);
+    alert("Erro de conexão. Verifique se a internet ou o servidor estão ok.");
   }
 };
   return (
