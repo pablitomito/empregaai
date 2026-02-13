@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation'; // 1. Importamos o roteador
 import { Sparkles, ClipboardCheck, ArrowRight, Target } from 'lucide-react';
 
 interface DashPendenteProps {
@@ -7,6 +8,8 @@ interface DashPendenteProps {
 }
 
 export default function DashPendente({ nome }: DashPendenteProps) {
+  const router = useRouter(); // 2. Inicializamos o roteador
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
       <div className="max-w-3xl w-full">
@@ -41,7 +44,11 @@ export default function DashPendente({ nome }: DashPendenteProps) {
               <p className="text-gray-500">Leva menos de 3 minutos e nossa IA cuidará do resto.</p>
             </div>
 
-            <button className="w-full md:w-auto px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl shadow-xl hover:shadow-blue-200 transition-all flex items-center justify-center gap-3 group">
+            {/* 3. BOTÃO COM REDIRECIONAMENTO */}
+            <button 
+              onClick={() => router.push('/onboarding/objetivo')} // Redireciona para a pasta da imagem
+              className="w-full md:w-auto px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl shadow-xl hover:shadow-blue-200 transition-all flex items-center justify-center gap-3 group"
+            >
               Responder questionários sobre mim
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -53,7 +60,6 @@ export default function DashPendente({ nome }: DashPendenteProps) {
           </div>
         </div>
 
-        {/* Frase de Rodapé Inspiracional */}
         <p className="text-center mt-10 text-gray-400 text-sm italic">
           "A melhor forma de prever o futuro é criá-lo." — Peter Drucker
         </p>
