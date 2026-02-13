@@ -144,15 +144,16 @@ const CriarCurriculo: NextPage = () => {
     setLanguages(prev => prev.filter(lang => lang.id !== id));
   };
 
- const handleGenerateCV = async (e: any) => {
+const handleGenerateCV = async (e: any) => {
   if (e && e.preventDefault) e.preventDefault();
 
   try {
     const response = await fetch('/api/auth/curriculo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // Usei EXATAMENTE os nomes que você me mandou:
       body: JSON.stringify({ 
+        // Isso aqui envia fullName, email, phone, etc., individualmente
+        ...personalInfo, 
         experiences, 
         education, 
         skills, 
@@ -163,14 +164,13 @@ const CriarCurriculo: NextPage = () => {
     if (response.ok) {
       router.push('/onboarding/analisando');
     } else {
-      // Se der erro, vamos ler o que o servidor diz
       const errorData = await response.json();
       console.error("ERRO DO SERVIDOR:", errorData);
-      alert(`Erro: ${errorData.message || 'O servidor recusou os dados.'}`);
+      alert(`Erro: ${errorData.message || 'O banco recusou os dados.'}`);
     }
   } catch (error) {
     console.error("ERRO NA REQUISIÇÃO:", error);
-    alert("Erro de conexão. Verifique se a internet ou o servidor estão ok.");
+    alert("Erro de conexão.");
   }
 };
   return (
