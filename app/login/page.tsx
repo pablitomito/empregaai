@@ -65,7 +65,7 @@ export default function LoginPage() {
     localStorage.setItem('token', response.data.data.token);
 localStorage.setItem('user', JSON.stringify(response.data.data.user));
 
-router.push('/app/dashboard/page.tsx');
+router.push('/dashboard');
       
     } catch (err: any) {
       console.error('Erro ao fazer login:', err);
