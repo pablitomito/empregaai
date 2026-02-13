@@ -1,11 +1,13 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { useState, FormEvent, KeyboardEvent } from 'react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { PersonalInfo, Experience, Education, Language, CVData } from '../../types/cv.types';
 import styles from '../../styles/CriarCurriculo.module.css';
 import { useSession } from 'next-auth/react'; // Se usar NextAuth
+export default function CriarCurriculo() { // Nome único e exportado aqui mesmo
+  const router = useRouter();
 
 const CriarCurriculo: NextPage = () => {
   // States
@@ -623,4 +625,4 @@ const CriarCurriculo: NextPage = () => {
   );
 };
 
-export default CriarCurriculo;
+}
