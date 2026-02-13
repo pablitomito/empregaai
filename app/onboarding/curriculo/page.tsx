@@ -6,10 +6,10 @@ import Head from 'next/head';
 import { PersonalInfo, Experience, Education, Language, CVData } from '../../types/cv.types';
 import styles from '../../styles/CriarCurriculo.module.css';
 import { useSession } from 'next-auth/react'; // Se usar NextAuth
-export default function CriarCurriculo() { // Nome único e exportado aqui mesmo
-  const router = useRouter();
+
 
 const CriarCurriculo: NextPage = () => {
+  const router = useRouter();
   // States
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     fullName: '',
@@ -157,6 +157,7 @@ const CriarCurriculo: NextPage = () => {
     alert("⚠️ Preencha os campos de formação ou remova a formação vazia.");
     return;
   }
+  
 
   // 2. ENVIO DINÂMICO (PARA NÃO DAR ERRO DE NOME DE VARIÁVEL)
   try {
@@ -622,4 +623,4 @@ const CriarCurriculo: NextPage = () => {
   );
 };
 
-}
+export default CriarCurriculo;
