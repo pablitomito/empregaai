@@ -25,8 +25,9 @@ export default function FinalPerfilPage() {
 
   const handleFinish = () => {
     // Aqui no futuro faremos o POST para o seu Banco de Dados
-    // Por enquanto, apenas levamos o utilizador para a criação do currículo
-    router.push('/dashboard/curriculo'); // Ajuste o caminho para a sua página de currículo
+    
+    // REDIRECIONAMENTO CORRIGIDO:
+    router.push('/onboarding/curriculo'); 
   };
 
   return (
