@@ -1,8 +1,9 @@
 // pages/checkout.tsx
+"use client";
 
 import { useState } from 'react';
-import type { NextPage } from 'next';
-import Head from 'next/head';
+
+
 import Image from 'next/image';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -124,13 +125,10 @@ const CheckoutForm = () => {
 };
 
 // Main Checkout Page
-const CheckoutPage: NextPage = () => {
+export default function CheckoutPage() {
   return (
     <>
-      <Head>
-        <title>Checkout Premium - CurriculoJob</title>
-        <meta name="description" content="Ative sua assinatura premium e destaque-se no mercado" />
-      </Head>
+    
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         {/* HEADER */}
@@ -354,4 +352,4 @@ const CheckoutPage: NextPage = () => {
   );
 };
 
-export default CheckoutPage;
+
