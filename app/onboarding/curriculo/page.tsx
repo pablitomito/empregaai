@@ -147,30 +147,43 @@ const CriarCurriculo: NextPage = () => {
 const handleGenerateCV = async (e: any) => {
   if (e && e.preventDefault) e.preventDefault();
 
+  // 1. Criamos um objeto limpo com o email no topo
+  const payload = {
+    email: personalInfo.email, // O servidor quer email? Toma o email.
+    fullName: personalInfo.fullName,
+    location: personalInfo.location,
+    phone: personalInfo.phone,
+    summary: personalInfo.summary,
+    experiences: experiences,
+    education: education,
+    skills: skills,
+    languages: languages
+  };
+
+  console.log("🚀 Enviando para o servidor:", payload);
+
   try {
     const response = await fetch('/api/auth/curriculo', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        // Isso aqui envia fullName, email, phone, etc., individualmente
-        personalInfo, 
-        experiences, 
-        education, 
-        skills, 
-        languages 
-      }),
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json' 
+      },
+      body: JSON.stringify(payload),
     });
+
+    const data = await response.json();
 
     if (response.ok) {
       router.push('/onboarding/analisando');
     } else {
-      const errorData = await response.json();
-      console.error("ERRO DO SERVIDOR:", errorData);
-      alert(`Erro: ${errorData.message || 'O banco recusou os dados.'}`);
+      console.error("❌ Erro retornado:", data);
+      // Se o erro persistir, vamos mostrar o que o servidor recebeu de fato
+      alert(`O servidor diz: ${data.error || data.message || JSON.stringify(data)}`);
     }
   } catch (error) {
-    console.error("ERRO NA REQUISIÇÃO:", error);
-    alert("Erro de conexão.");
+    console.error("🔥 Erro na conexão:", error);
+    alert("Erro de conexão. O servidor está rodando?");
   }
 };
   return (
