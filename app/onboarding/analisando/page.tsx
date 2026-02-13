@@ -68,7 +68,7 @@ export default function AnalisandoPerfil() {
           </p>
 
           <button 
-            onClick={() => router.push('/onboarding/analisando')} 
+            onClick={() => router.push('/onboarding/checkout')} 
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2 text-lg"
           >
             Candidatar-me agora
