@@ -8,13 +8,13 @@ import { Loader2 } from 'lucide-react';
 import DashPendente from './componentes/DashPendente';
 import DashCompleto from './componentes/DashCompleto';
 
-
 export default function DashboardPage() {
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>(''); // Novo estado para o nome
 
   useEffect(() => {
-    // 1. Verifica se existe Token
+    // 1. Verifica se existe Token e Dados do Usuário
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
 
@@ -23,19 +23,25 @@ export default function DashboardPage() {
       return;
     }
 
-    // 2. Lê o status do usuário
+    // 2. Lê os dados e o status do usuário
     try {
       const user = JSON.parse(userData);
-      // Se o backend não retornar profileStatus, assumimos 'pending'
+      
+      // Extraímos o nome (ou usamos 'Recruta' como fallback)
+      // .split(' ')[0] serve para pegar apenas o primeiro nome e ficar mais amigável
+      const firstName = user.fullName ? user.fullName.split(' ')[0] : 'Usuário';
+      setUserName(firstName);
+      
+      // Define o status para decidir qual dash mostrar
       setStatus(user.profileStatus || 'pending');
     } catch (error) {
       console.error("Erro ao ler dados do usuário", error);
-      localStorage.clear(); // Limpa dados corrompidos
+      localStorage.clear(); 
       router.push('/login');
     }
   }, [router]);
 
-  // Tela de Carregamento enquanto verifica
+  // Tela de Carregamento (Spinner)
   if (status === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -47,13 +53,13 @@ export default function DashboardPage() {
     );
   }
 
-  // 3. A Decisão Final
+  // 3. A Decisão Final: Passamos o userName para o DashPendente
   return (
     <>
       {status === 'completed' ? (
         <DashCompleto />
       ) : (
-        <DashPendente />
+        <DashPendente nome={userName} />
       )}
     </>
   );
