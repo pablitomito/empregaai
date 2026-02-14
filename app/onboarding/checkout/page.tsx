@@ -1,324 +1,189 @@
-// pages/checkout.tsx - VERSÃO PROFISSIONAL
 "use client";
-import { useState } from 'react';
-import Head from 'next/head';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
+// Inicialização do Stripe com a chave do seu .env
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
-// Checkout Form Component
+// --- COMPONENTE DO FORMULÁRIO (DESIGN CLEAN) ---
 const CheckoutForm = () => {
   const stripe = useStripe();
   const elements = useElements();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!stripe || !elements) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/create-subscription', {
+      const response = await fetch('/api/create-subscription', { 
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' }
       });
+      const data = await response.json();
 
-      const { clientSecret } = await response.json();
-
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement)!,
-        },
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
+        payment_method: { card: elements.getElement(CardElement)! },
       });
 
       if (stripeError) {
-        setError(stripeError.message || 'Erro ao processar pagamento');
-        setLoading(false);
-        return;
-      }
-
-      if (paymentIntent?.status === 'succeeded') {
-        window.location.href = '/success';
+        setError(stripeError.message || 'Ocorreu um erro no processamento.');
+      } else if (paymentIntent?.status === 'succeeded') {
+        router.push('/success');
       }
     } catch (err) {
-      setError('Erro ao processar pagamento. Tente novamente.');
+      setError('Falha na comunicação com o servidor. Tente novamente.');
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white p-6 rounded-lg border border-gray-300">
-        <CardElement
+    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+      <div className="bg-white p-4 rounded-md border border-slate-300 shadow-sm">
+        <CardElement 
           options={{
             style: {
               base: {
                 fontSize: '16px',
-                color: '#1f2937',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                '::placeholder': {
-                  color: '#9ca3af',
-                },
-              },
-              invalid: {
-                color: '#dc2626',
+                color: '#1e293b',
+                '::placeholder': { color: '#94a3b8' },
               },
             },
-          }}
+            hidePostalCode: true
+          }} 
         />
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded text-sm">
+        <div className="text-red-600 text-sm font-medium bg-red-50 p-3 rounded border border-red-100">
           {error}
         </div>
       )}
 
       <button
-        type="submit"
-        disabled={!stripe || loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={loading || !stripe}
+        className="w-full bg-[#2563EB] hover:bg-[#1d4ed8] text-white font-bold py-4 rounded shadow-md transition-all disabled:opacity-50 uppercase tracking-wide text-sm"
       >
-        {loading ? 'A processar...' : 'Confirmar subscrição'}
+        {loading ? 'Processando...' : 'Ativar minha candidatura agora'}
       </button>
-
-      <div className="flex items-center justify-center gap-4 pt-2 text-xs text-gray-500 border-t border-gray-200">
-        <span className="flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-          </svg>
-          Pagamento seguro
-        </span>
-        <span className="text-gray-300">|</span>
-        <span>SSL/TLS encriptado</span>
+      
+      <div className="flex items-center justify-center gap-2 mt-4 text-[11px] text-slate-400 uppercase tracking-widest font-semibold">
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"/></svg>
+        Pagamento Seguro via Stripe
       </div>
     </form>
   );
 };
 
-// Main Checkout Page
+// --- PÁGINA PRINCIPAL ---
 export default function CheckoutPage() {
   return (
-    <>
-      
+    <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] antialiased">
+      {/* Header de Progresso Profissional */}
+      <header className="bg-white border-b border-slate-200 py-4">
+        <div className="max-w-5xl mx-auto px-6 flex justify-between items-center">
+          <span className="text-xl font-bold tracking-tight text-slate-900 underline decoration-[#2563EB]">CurriculoJob</span>
+          <div className="flex items-center gap-8 text-[12px] font-bold text-slate-400 uppercase tracking-tighter">
+            <span className="text-slate-900 border-b-2 border-[#2563EB]">1. Checkout</span>
+            <span>2. Finalização</span>
+          </div>
+        </div>
+      </header>
 
-      <div className="min-h-screen bg-gray-50">
-        {/* HEADER */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="text-xl font-bold text-gray-900">
-                CurriculoJob
-              </div>
+      <main className="max-w-5xl mx-auto px-6 py-12">
+        {/* Sua Copy de Ontem */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
+            Parabéns! Você está a um passo de se candidatar para esses e outros milhares de empregos em Portugal.
+          </h1>
+          <p className="text-slate-600 text-lg max-w-2xl mx-auto font-medium">
+            Sua IA Sniper já identificou as melhores oportunidades. Ative o envio agora para entrar no topo da lista dos recrutadores.
+          </p>
+        </div>
 
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                </svg>
-                <span className="hidden sm:inline">Conexão segura</span>
-              </div>
+        <div className="grid md:grid-cols-12 gap-12 items-start">
+          {/* Lado Esquerdo: Valor e Prova Social */}
+          <div className="md:col-span-7 space-y-8">
+            <div className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm">
+              <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
+                <span className="w-1 h-6 bg-[#2563EB] rounded-full"></span>
+                Benefícios do Acesso Total (14 dias)
+              </h2>
+              <ul className="space-y-4">
+                {[
+                  'Candidaturas Automáticas 24h/dia',
+                  'Otimização técnica para sistemas de triagem (ATS)',
+                  'Acesso exclusivo a vagas não publicadas',
+                  'Suporte prioritário ao candidato'
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-slate-700 font-medium text-sm">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Testemunhos Sóbrios */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              {[
+                { nome: 'Rodrigo Borges', cargo: 'Barista · Starbucks', texto: 'Consegui montar um ótimo currículo em menos de meia hora. O editor é bem fácil de usar.' },
+                { nome: 'Lauro Soares', cargo: 'Web Developer · Uber', texto: 'O suporte foi super prestativo. Foi com este currículo que consegui meu emprego atual.' }
+              ].map((t) => (
+                <div key={t.nome} className="p-5 bg-slate-100 rounded border border-slate-200">
+                  <p className="text-xs italic text-slate-600 mb-3">"{t.texto}"</p>
+                  <p className="text-[13px] font-bold text-slate-900">{t.nome}</p>
+                  <p className="text-[11px] text-slate-500 uppercase font-semibold">{t.cargo}</p>
+                </div>
+              ))}
             </div>
           </div>
-        </header>
 
-        {/* PROGRESS */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                <div className="bg-blue-600 h-full rounded-full" style={{ width: '95%' }}></div>
+          {/* Lado Direito: Checkout */}
+          <div className="md:col-span-5">
+            <div className="bg-white p-8 rounded-lg border-2 border-slate-900 shadow-xl sticky top-8">
+              <div className="text-center pb-6 border-b border-slate-100">
+                <span className="text-slate-500 text-sm font-bold uppercase tracking-widest">Acesso Total</span>
+                <div className="mt-2 flex items-center justify-center gap-3">
+                   <span className="text-4xl font-black text-slate-900 underline decoration-[#2563EB]">3,99€</span>
+                </div>
+                <p className="text-[12px] text-slate-400 mt-2 font-bold uppercase">Pagamento Único · 14 Dias de Acesso</p>
               </div>
-              <span className="text-xs font-medium text-gray-500">Passo 3 de 3</span>
+
+              <Elements stripe={stripePromise}>
+                <CheckoutForm />
+              </Elements>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded border border-blue-100 flex gap-3">
+                <svg className="w-10 h-10 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                <div className="text-[12px]">
+                  <p className="font-bold text-blue-900">Garantia de 14 dias</p>
+                  <p className="text-blue-700 font-medium">Reembolso total caso não esteja satisfeito com as candidaturas.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </main>
 
-        {/* MAIN */}
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-          <div className="text-center mb-12">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-              Subscrição Premium
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Desbloqueie o acesso completo à nossa plataforma de recrutamento e impulsione a sua carreira profissional.
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-5 gap-8">
-            {/* LEFT: BENEFITS */}
-            <div className="lg:col-span-3 space-y-6">
-              {/* VALUE PROPOSITION */}
-              <div className="bg-white p-8 rounded-lg border border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Porquê CurriculoJob Premium?
-                </h2>
-                <p className="text-gray-600 leading-relaxed mb-6">
-                  A nossa plataforma utiliza tecnologia de Inteligência Artificial para conectar o seu perfil profissional com as melhores oportunidades de emprego em Portugal. Enquanto outros portais exigem que procure manualmente, nós trabalhamos continuamente para encontrar e candidatá-lo às vagas mais adequadas ao seu perfil.
-                </p>
-              </div>
-
-              {/* FEATURES */}
-              <div className="bg-white p-8 rounded-lg border border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  Funcionalidades incluídas
-                </h2>
-
-                <div className="space-y-5">
-                  {[
-                    {
-                      title: 'Candidatura automática',
-                      description: 'Sistema automatizado que preenche e submete candidaturas em seu nome.'
-                    },
-                    {
-                      title: 'Acesso a vagas não publicadas',
-                      description: 'Receba ofertas exclusivas de recrutadores parceiros antes de serem divulgadas publicamente.'
-                    },
-                    {
-                      title: 'Currículos ilimitados',
-                      description: 'Crie e gerencie múltiplas versões do seu CV adaptadas a diferentes sectores.'
-                    },
-                    {
-                      title: 'Dashboard de análise',
-                      description: 'Acompanhe visualizações do seu perfil e taxas de resposta em tempo real.'
-                    },
-                    {
-                      title: 'Prioridade nos resultados',
-                      description: 'O seu perfil recebe destaque nos sistemas de busca dos recrutadores parceiros.'
-                    }
-                  ].map((feature, index) => (
-                    <div key={index} className="flex gap-4">
-                      <div className="flex-shrink-0 mt-1">
-                        <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">
-                          {feature.title}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* TESTIMONIAL */}
-              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                <div className="flex gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-3 italic">
-                  "Obtive três entrevistas na primeira semana após activar a subscrição Premium. O investimento compensou rapidamente."
-                </p>
-                <p className="text-sm font-medium text-gray-900">
-                  Mariana Silva, Consultora de Marketing - Lisboa
-                </p>
-              </div>
-            </div>
-
-            {/* RIGHT: PRICING */}
-            <div className="lg:col-span-2">
-              <div className="bg-white p-8 rounded-lg border border-gray-300 shadow-lg sticky top-24">
-                <div className="text-center pb-6 border-b border-gray-200">
-                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                    Plano Premium
-                  </div>
-                  
-                  <div className="flex items-baseline justify-center gap-2 mb-3">
-                    <span className="text-4xl font-bold text-gray-900">3,99€</span>
-                    <span className="text-gray-500">/mês</span>
-                  </div>
-
-                  <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Sem período de fidelização
-                  </div>
-
-                  <p className="text-xs text-gray-500 mt-3">
-                    Cancele a qualquer momento sem custos adicionais
-                  </p>
-                </div>
-
-                <div className="py-6">
-                  <Elements stripe={stripePromise}>
-                    <CheckoutForm />
-                  </Elements>
-                </div>
-
-                <div className="pt-6 border-t border-gray-200">
-                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                    <div className="flex gap-3">
-                      <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                      <div className="text-sm">
-                        <p className="font-semibold text-blue-900 mb-1">
-                          Garantia de satisfação
-                        </p>
-                        <p className="text-blue-700">
-                          Reembolso integral em caso de insatisfação nos primeiros 7 dias.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-6 flex items-center justify-center gap-4 text-xs text-gray-400">
-                  <span>Visa</span>
-                  <span>Mastercard</span>
-                  <span>American Express</span>
-                  <span>MB Way</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
-
-        {/* FOOTER */}
-        <footer className="bg-white border-t border-gray-200 mt-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-              <div className="flex items-center gap-6">
-                <a href="/termos" className="hover:text-gray-900 transition-colors">
-                  Termos de serviço
-                </a>
-                <a href="/privacidade" className="hover:text-gray-900 transition-colors">
-                  Política de privacidade
-                </a>
-              </div>
-              
-              <div className="flex items-center gap-2 text-xs">
-                <span>Pagamentos processados por</span>
-                <svg className="h-4" viewBox="0 0 60 25" fill="none">
-                  <path d="M16.5 12.5h5l-2.5-7.5-2.5 7.5z" fill="#635BFF"/>
-                  <path d="M23 5h5v15h-5V5z" fill="#635BFF"/>
-                  <path d="M30 12.5h5l-2.5-7.5-2.5 7.5z" fill="#635BFF"/>
-                  <path d="M37 5h8v3h-5v3h4v3h-4v3h5v3h-8V5z" fill="#635BFF"/>
-                </svg>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-gray-200 text-center text-xs text-gray-400">
-              © 2026 CurriculoJob. Todos os direitos reservados.
-            </div>
-          </div>
-        </footer>
-      </div>
-    </>
+      {/* Footer Minimalista */}
+      <footer className="mt-20 border-t border-slate-200 py-8 bg-white text-center">
+        <div className="flex justify-center gap-6 text-[12px] font-bold text-slate-400 uppercase tracking-tighter">
+          <a href="#" className="hover:text-slate-900 transition-colors">Termos</a>
+          <a href="#" className="hover:text-slate-900 transition-colors">Privacidade</a>
+          <a href="#" className="hover:text-slate-900 transition-colors">Contato</a>
+        </div>
+        <p className="text-[10px] text-slate-300 mt-4 font-bold">© 2026 CURRICULOJOB PORTUGAL - TODOS OS DIREITOS RESERVADOS</p>
+      </footer>
+    </div>
   );
-};
-
+}
