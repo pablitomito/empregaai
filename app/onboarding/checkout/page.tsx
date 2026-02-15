@@ -96,10 +96,10 @@ export default function CurriculoSucesso() {
               <p className="text-sm text-muted-foreground">
                 Aumente suas chances distribuindo para Indeed, Talenter, Eurofirms e outros portais líderes.
               </p>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 shadow-md" onClick={handleSubscribe} disabled={createCheckout.isPending}>
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 shadow-md text-white" onClick={handleSubscribe} disabled={createCheckout.isPending}>
                 {createCheckout.isPending ? "A processar..." : (
                   <>
-                    <Send className="mr-2 h-4 w-4" />
+                    <Send className="mr-2 h-4 w-4 text-white" />
                     Distribuir Agora
                   </>
                 )}
