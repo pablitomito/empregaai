@@ -82,9 +82,9 @@ export default function CurriculoSucesso() {
           <Card className="border border-blue-100 bg-gradient-to-br from-blue-50/50 to-transparent shadow-sm">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-blue-900">
-                  <Send className="h-5 w-5 text-blue-600" />
-                  Distribuir Agora
+                <CardTitle className="flex items-center gap-2 text-black font bold">
+                  <Send className="h-5 w-5 text-black" />
+                  Distribuir Automaticamente
                 </CardTitle>
                 <Badge className="bg-blue-600">Recomendado</Badge>
               </div>
@@ -99,7 +99,7 @@ export default function CurriculoSucesso() {
               <Button className="w-full bg-blue-600 hover:bg-blue-700 shadow-md" onClick={handleSubscribe} disabled={createCheckout.isPending}>
                 {createCheckout.isPending ? "A processar..." : (
                   <>
-                    <Send className="mr-2 h-4 w-4" />
+                    <Send className="mr-2 h-4 w-4 text-white" />
                     Distribuir Agora
                   </>
                 )}
@@ -131,7 +131,7 @@ export default function CurriculoSucesso() {
                 <h3 className="font-bold text-slate-800 text-lg">O que você recebe:</h3>
                 <div className="space-y-3">
                   {[
-                    "Distribuição automática para 6 portais",
+                    "Distribuição automática para as maiores empresas do mundo",
                     "Matching inteligente com IA",
                     "Notificações em tempo real",
                     "Estatísticas detalhadas",
@@ -176,7 +176,7 @@ export default function CurriculoSucesso() {
             >
               {createCheckout.isPending ? "A processar..." : (
                 <>
-                  <CreditCard className="mr-2 h-5 w-5" />
+                  <CreditCard className="mr-2 h-5 w-5 text-white" />
                   Subscrever Agora
                 </>
               )}
