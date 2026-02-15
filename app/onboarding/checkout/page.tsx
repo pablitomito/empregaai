@@ -6,11 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
 import { CheckCircle2, CreditCard, Download, Send, Sparkles, ArrowRight } from "lucide-react";
-import { useLocation } from "wouter";
+import { useRouter } from "next/navigation";
+
 import { toast } from "sonner";
 
 export default function CurriculoSucesso() {
-  const [, setLocation] = useLocation();
+  const router = useRouter();
 
   const createCheckout = trpc.subscription.createCheckout.useMutation({
     // Corrigido: Tipagem explícita para o TypeScript parar de reclamar
@@ -218,7 +219,7 @@ export default function CurriculoSucesso() {
             Ainda tem dúvidas? Veja como funciona a distribuição automática
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button variant="outline" onClick={() => setLocation("/")}>
+            <Button variant="outline" onClick={() => router.push("/")}>
               Voltar à Página Inicial
             </Button>
             <Button onClick={handleSubscribe} disabled={createCheckout.isPending}>
