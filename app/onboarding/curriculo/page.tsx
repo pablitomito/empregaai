@@ -145,9 +145,9 @@ export default function CurriculoBuilder() {
         
         {/* Header aprimorado */}
         <div className="mb-10 text-center lg:text-left">
-          <Badge className="mb-2 bg-blue-100 text-blue-700 hover:bg-blue-100 border-none px-3 py-1">✨ Gerador de Currículo IA</Badge>
+          <Badge className="mb-2 bg-blue-100 text-blue-700 hover:bg-blue-100 border-none px-3 py-1"> Modelo base para moldar o seu curriculo</Badge>
           <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Crie seu Currículo Profissional</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Pronto para ser distribuído em mais de 6 portais.</p>
+          <p className="text-muted-foreground mt-2 text-lg">Pronto para ser distribuído nos maires portais de empregos de Portugal.</p>
         </div>
 
         {/* Barra de Progresso */}
@@ -233,44 +233,112 @@ export default function CurriculoBuilder() {
               </Card>
             )}
 
-            {/* Passos 2, 3 e 4 mantidos conforme sua lógica original, apenas ajustando o estilo dos botões */}
+          {/* PASSO 2: EXPERIÊNCIA */}
             {step === 2 && (
-               <Card className="border-none shadow-xl">
-                 <CardHeader><CardTitle>Experiência Profissional</CardTitle></CardHeader>
-                 <CardContent className="space-y-6">
-                    {resumeData.experiences.map((exp, idx) => (
-                      <div key={exp.id} className="p-4 border rounded-xl space-y-4 bg-white dark:bg-slate-900 shadow-sm relative">
-                        <Button variant="ghost" size="icon" onClick={() => removeExperience(exp.id)} className="absolute right-2 top-2 text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                        <div className="grid grid-cols-2 gap-4 pt-4">
-                           <Input placeholder="Empresa" value={exp.company} onChange={(e) => {
-                             const updated = resumeData.experiences.map(x => x.id === exp.id ? {...x, company: e.target.value} : x);
-                             setResumeData({...resumeData, experiences: updated});
-                           }} />
-                           <Input placeholder="Cargo" value={exp.position} onChange={(e) => {
-                             const updated = resumeData.experiences.map(x => x.id === exp.id ? {...x, position: e.target.value} : x);
-                             setResumeData({...resumeData, experiences: updated});
-                           }} />
-                        </div>
-                        <Textarea placeholder="Responsabilidades..." value={exp.description} onChange={(e) => {
-                          const updated = resumeData.experiences.map(x => x.id === exp.id ? {...x, description: e.target.value} : x);
-                          setResumeData({...resumeData, experiences: updated});
+              <Card className="border-none shadow-xl">
+                <CardHeader><CardTitle>Experiência Profissional</CardTitle></CardHeader>
+                <CardContent className="space-y-6">
+                  {resumeData.experiences.map((exp) => (
+                    <div key={exp.id} className="p-4 border rounded-xl space-y-4 bg-white dark:bg-slate-900 shadow-sm relative">
+                      <Button variant="ghost" size="icon" onClick={() => removeExperience(exp.id)} className="absolute right-2 top-2 text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <div className="grid grid-cols-2 gap-4 pt-4">
+                        <Input placeholder="Empresa" value={exp.company} onChange={(e) => {
+                          const updated = resumeData.experiences.map(x => x.id === exp.id ? { ...x, company: e.target.value } : x);
+                          setResumeData({ ...resumeData, experiences: updated });
+                        }} />
+                        <Input placeholder="Cargo" value={exp.position} onChange={(e) => {
+                          const updated = resumeData.experiences.map(x => x.id === exp.id ? { ...x, position: e.target.value } : x);
+                          setResumeData({ ...resumeData, experiences: updated });
                         }} />
                       </div>
-                    ))}
-                    <Button variant="outline" onClick={addExperience} className="w-full border-dashed py-6"><Plus className="mr-2 h-4 w-4" /> Adicionar Experiência</Button>
-                    <div className="flex gap-4">
-                      <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Anterior</Button>
-                      <Button onClick={() => setStep(3)} className="flex-1">Próximo</Button>
+                      <Textarea placeholder="Descreva suas responsabilidades..." value={exp.description} onChange={(e) => {
+                        const updated = resumeData.experiences.map(x => x.id === exp.id ? { ...x, description: e.target.value } : x);
+                        setResumeData({ ...resumeData, experiences: updated });
+                      }} />
                     </div>
-                 </CardContent>
-               </Card>
+                  ))}
+                  <Button variant="outline" onClick={addExperience} className="w-full border-dashed py-6"><Plus className="mr-2 h-4 w-4" /> Adicionar Experiência</Button>
+                  <div className="flex gap-4 mt-6">
+                    <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Anterior</Button>
+                    <Button onClick={() => setStep(3)} className="flex-1">Próximo: Formação</Button>
+                  </div>
+                </CardContent>
+              </Card>
             )}
-            
-            {/* ... lógica de Step 3 e 4 repetida (omitida para brevidade, mas segue o mesmo estilo) */}
-          </div>
 
+            {/* PASSO 3: FORMAÇÃO ACADÊMICA */}
+            {step === 3 && (
+              <Card className="border-none shadow-xl">
+                <CardHeader><CardTitle>Formação Acadêmica</CardTitle></CardHeader>
+                <CardContent className="space-y-6">
+                  {resumeData.education.map((edu) => (
+                    <div key={edu.id} className="p-4 border rounded-xl space-y-4 bg-white dark:bg-slate-900 relative">
+                      <Button variant="ghost" size="icon" onClick={() => removeEducation(edu.id)} className="absolute right-2 top-2 text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                        <Input placeholder="Instituição (Ex: USP)" value={edu.school} onChange={(e) => {
+                          const updated = resumeData.education.map(x => x.id === edu.id ? { ...x, school: e.target.value } : x);
+                          setResumeData({ ...resumeData, education: updated });
+                        }} />
+                        <Input placeholder="Curso (Ex: Administração)" value={edu.degree} onChange={(e) => {
+                          const updated = resumeData.education.map(x => x.id === edu.id ? { ...x, degree: e.target.value } : x);
+                          setResumeData({ ...resumeData, education: updated });
+                        }} />
+                      </div>
+                      <Input placeholder="Ano de Conclusão" value={edu.graduationYear} onChange={(e) => {
+                        const updated = resumeData.education.map(x => x.id === edu.id ? { ...x, graduationYear: e.target.value } : x);
+                        setResumeData({ ...resumeData, education: updated });
+                      }} />
+                    </div>
+                  ))}
+                  <Button variant="outline" onClick={addEducation} className="w-full border-dashed py-6"><Plus className="mr-2 h-4 w-4" /> Adicionar Formação</Button>
+                  <div className="flex gap-4 mt-6">
+                    <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Anterior</Button>
+                    <Button onClick={() => setStep(4)} className="flex-1">Próximo: Competências</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* PASSO 4: COMPETÊNCIAS E FINALIZAÇÃO */}
+            {step === 4 && (
+              <Card className="border-none shadow-xl">
+                <CardHeader><CardTitle>Competências e Habilidades</CardTitle></CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Ex: React, Inglês Fluente, Gestão..." 
+                      value={newSkill} 
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && addSkill()}
+                    />
+                    <Button onClick={addSkill}>Adicionar</Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {resumeData.skills.map(skill => (
+                      <Badge key={skill} variant="secondary" className="pl-3 pr-1 py-1 gap-2 text-sm">
+                        {skill}
+                        <Trash2 className="w-3 h-3 cursor-pointer hover:text-destructive" onClick={() => removeSkill(skill)} />
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-4 pt-6 border-t mt-6">
+                    <Button variant="outline" onClick={() => setStep(3)} className="flex-1">Anterior</Button>
+                    <Button 
+                      onClick={handleSaveResume} 
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12"
+                      disabled={createResume.isPending}
+                    >
+                      {createResume.isPending ? "Salvando..." : "Gerar Meu Currículo"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            </div>
           {/* Coluna do Preview (5 colunas) - Onde a mágica acontece */}
           <div className="lg:col-span-5">
             <div className="sticky top-10">
