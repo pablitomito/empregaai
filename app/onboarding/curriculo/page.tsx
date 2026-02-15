@@ -11,6 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { Plus, Trash2, Download, ChevronRight, CheckCircle2, Upload, Linkedin, User, MapPin, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "wouter";
+import { useRouter } from "next/navigation";
 
 interface ResumeData {
   fullName: string;
@@ -40,6 +41,7 @@ interface ResumeData {
 
 export default function CurriculoBuilder() {
   const [step, setStep] = useState(1);
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [resumeData, setResumeData] = useState<ResumeData>({
     fullName: "",
@@ -88,16 +90,17 @@ export default function CurriculoBuilder() {
 },
   });
 
-  const handleSaveResume = async () => {
-    if (!resumeData.fullName || !resumeData.email) {
-      toast.error("Por favor, preencha os dados obrigatórios");
-      return;
-    }
-    createResume.mutate({
-      title: `Currículo de ${resumeData.fullName}`,
-      summary: resumeData.summary,
-    });
-  };
+  const handleSaveResume = () => {
+  if (!resumeData.fullName) {
+    toast.error("Por favor, preencha o nome completo.");
+    return;
+  }
+
+  toast.success("Currículo gerado! Redirecionando para o checkout...");
+  
+  // Esse comando ignora o servidor e te leva direto para a próxima página
+  router.push("/onboarding/checkout"); 
+};
 
   const handleSuccessRedirect = () => {
     setTimeout(() => setStep(5), 500);
@@ -326,14 +329,15 @@ export default function CurriculoBuilder() {
                     ))}
                   </div>
                   <div className="flex gap-4 pt-6 border-t mt-6">
-                    <Button variant="outline" onClick={() => setStep(3)} className="flex-1">Anterior</Button>
-                    <Button 
-                      onClick={handleSaveResume} 
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12"
-                      disabled={createResume.isPending}
-                    >
-                      {createResume.isPending ? "Salvando..." : "Gerar Meu Currículo"}
-                    </Button>
+                    <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
+                            Anterior
+                          </Button>
+                          <Button 
+                            onClick={handleSaveResume} 
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12"
+                          >
+                            Gerar Meu Currículo
+                          </Button>
                   </div>
                 </CardContent>
               </Card>
