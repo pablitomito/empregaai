@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
-import { CheckCircle2, CreditCard, Download, Send, Sparkles, ArrowRight } from "lucide-react";
+import { CheckCircle2, CreditCard, Download, Send, Sparkles, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -108,7 +108,7 @@ export default function CurriculoSucesso() {
           </Card>
         </div>
 
-        {/* Subscription Offer - O QUADRO QUE PEDISTE COM DEGRADÊ AZUL NA PONTA */}
+        {/* Subscription Offer */}
         <Card className="border-2 border-blue-100 shadow-xl overflow-hidden bg-white bg-gradient-to-br from-blue-100/60 via-white to-white">
           <CardHeader className="text-center space-y-4 pb-8">
             <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm font-semibold mx-auto shadow-sm">
@@ -125,8 +125,6 @@ export default function CurriculoSucesso() {
 
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-8">
-              
-              {/* Left side - Benefits (Sinais em AZUL) */}
               <div className="space-y-4">
                 <h3 className="font-bold text-slate-800 text-lg">O que você recebe:</h3>
                 <div className="space-y-3">
@@ -147,7 +145,6 @@ export default function CurriculoSucesso() {
                 </div>
               </div>
 
-              {/* Right side - Pricing Box (Como na imagem) */}
               <div className="space-y-4">
                 <h3 className="font-bold text-slate-800 text-lg text-center md:text-left">Plano Mensal</h3>
                 <div className="bg-slate-50 rounded-xl p-6 border border-slate-100 shadow-inner space-y-4">
@@ -167,7 +164,6 @@ export default function CurriculoSucesso() {
               </div>
             </div>
 
-            {/* CTA Button Principal */}
             <Button
               size="lg"
               className="w-full text-lg h-14 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all font-bold text-white"
@@ -208,7 +204,6 @@ export default function CurriculoSucesso() {
           </CardContent>
         </Card>
 
-        {/* Bottom CTA */}
         <div className="text-center pb-12">
           <Button variant="ghost" onClick={() => router.push("/")} className="text-slate-500">
             Voltar à Página Inicial
