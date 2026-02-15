@@ -1,213 +1,272 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
-import { CheckCircle2, CreditCard, Download, Send, Sparkles, User } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Plus, Trash2, ChevronRight, CheckCircle2, Upload, Linkedin, User, MapPin, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation"; // Alterado para o router do Next
 
-export default function CurriculoSucesso() {
-  const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
+interface ResumeData {
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+  summary: string;
+  photoUrl?: string;
+  linkedinUrl?: string;
+  experiences: Array<{
+    id: string;
+    company: string;
+    position: string;
+    startDate: string;
+    endDate: string;
+    description: string;
+  }>;
+  education: Array<{
+    id: string;
+    school: string;
+    degree: string;
+    field: string;
+    graduationYear: string;
+  }>;
+  skills: string[];
+}
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+export default function CurriculoBuilder() {
+  const router = useRouter(); // Inicializa o router
+  const [step, setStep] = useState(1);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [newSkill, setNewSkill] = useState("");
+  
+  const [resumeData, setResumeData] = useState<ResumeData>({
+    fullName: "",
+    email: "",
+    phone: "",
+    location: "",
+    summary: "",
+    photoUrl: "",
+    linkedinUrl: "",
+    experiences: [],
+    education: [],
+    skills: [],
+  });
 
-  const createCheckout = trpc.subscription.createCheckout.useMutation({
-    onSuccess: (data: { url: string | null }) => {
-      if (data.url) {
-        toast.info("A redirecionar para o checkout...");
-        window.location.href = data.url;
-      } else {
-        toast.error("Erro: URL de checkout não encontrada.");
-      }
+  // MUTAÇÃO TRPC PARA SALVAR E REDIRECIONAR
+  const createResume = trpc.resume.create.useMutation({
+    onSuccess: () => {
+      toast.success("Currículo salvo com sucesso!");
+      // REDIRECIONAMENTO PARA O CHECKOUT
+      router.push("/onboarding/checkout");
     },
     onError: (error: any) => {
-      toast.error(`Erro ao criar checkout: ${error.message}`);
+      toast.error(`Erro ao criar currículo: ${error.message}`);
+      // Fallback para teste: caso o banco falhe mas você queira ver o checkout
+      // router.push("/onboarding/checkout"); 
     },
   });
 
-  const handleSubscribe = () => {
-    createCheckout.mutate();
+  const handleSaveResume = async () => {
+    if (!resumeData.fullName || !resumeData.email) {
+      toast.error("Por favor, preencha os dados obrigatórios");
+      return;
+    }
+    
+    // Envia os dados para o backend
+    createResume.mutate({
+      title: `Currículo de ${resumeData.fullName}`,
+      summary: resumeData.summary,
+    });
   };
 
-  if (!isMounted) return null;
+  // Handlers de UI
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("A foto deve ter menos de 2MB");
+        return;
+      }
+      const imageUrl = URL.createObjectURL(file);
+      setResumeData({ ...resumeData, photoUrl: imageUrl });
+      toast.success("Foto carregada!");
+    }
+  };
+
+  const addExperience = () => {
+    setResumeData({
+      ...resumeData,
+      experiences: [...resumeData.experiences, { id: Date.now().toString(), company: "", position: "", startDate: "", endDate: "", description: "" }],
+    });
+  };
+
+  const removeExperience = (id: string) => {
+    setResumeData({ ...resumeData, experiences: resumeData.experiences.filter((exp) => exp.id !== id) });
+  };
+
+  const addEducation = () => {
+    setResumeData({
+      ...resumeData,
+      education: [...resumeData.education, { id: Date.now().toString(), school: "", degree: "", field: "", graduationYear: "" }],
+    });
+  };
+
+  const removeEducation = (id: string) => {
+    setResumeData({ ...resumeData, education: resumeData.education.filter((edu) => edu.id !== id) });
+  };
+
+  const addSkill = () => {
+    if (newSkill.trim()) {
+      setResumeData({ ...resumeData, skills: [...resumeData.skills, newSkill] });
+      setNewSkill("");
+    }
+  };
+
+  const removeSkill = (skill: string) => {
+    setResumeData({ ...resumeData, skills: resumeData.skills.filter((s) => s !== skill) });
+  };
+
+  const isStep1Complete = resumeData.fullName && resumeData.email && resumeData.phone;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12">
-      <div className="max-w-4xl mx-auto px-4 space-y-8">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950">
+      <div className="max-w-7xl mx-auto p-4 md:p-10">
         
-        {/* Success Header */}
-        <div className="text-center space-y-4">
-          <div className="flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl"></div>
-              <CheckCircle2 className="h-20 w-20 text-green-600 relative" />
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold tracking-tight">Currículo Criado com Sucesso!</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Parabéns! Seu currículo está pronto e profissional. Agora você pode descarregá-lo ou distribuir para os principais portais de emprego.
-          </p>
+        {/* Header */}
+        <div className="mb-10 text-center lg:text-left">
+          <Badge className="mb-2 bg-blue-100 text-blue-700 hover:bg-blue-100 border-none px-3 py-1">Modelo base para o seu currículo</Badge>
+          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Crie seu Currículo Profissional</h1>
         </div>
 
-        {/* Actions Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="border shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Download className="h-5 w-5 text-blue-600" />
-                Descarregar PDF
-              </CardTitle>
-              <CardDescription>
-                Baixe seu currículo em formato profissional
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Seu currículo está pronto para ser enviado para qualquer empresa ou portal de emprego.
-              </p>
-              <Button className="w-full" variant="outline" onClick={() => toast.success("Download iniciado...")}>
-                <Download className="mr-2 h-4 w-4" />
-                Descarregar Agora
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-blue-100 bg-gradient-to-br from-blue-50/50 to-transparent shadow-sm">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-blue-900">
-                  <Send className="h-5 w-5 text-blue-600" />
-                  Distribuir Agora
-                </CardTitle>
-                <Badge className="bg-blue-600">Recomendado</Badge>
+        {/* Progresso */}
+        <div className="mb-10 flex items-center justify-between max-w-2xl mx-auto lg:mx-0">
+          {[1, 2, 3, 4].map((s) => (
+            <div key={s} className="flex items-center flex-1 last:flex-none">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= s ? "bg-primary text-white" : "bg-slate-200 text-slate-500"}`}>
+                {step > s ? <CheckCircle2 className="w-5 h-5" /> : s}
               </div>
-              <CardDescription>
-                Envie para 6 portais de emprego com um clique
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Aumente suas chances distribuindo para Indeed, Talenter, Eurofirms e outros portais líderes.
-              </p>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 shadow-md text-white" onClick={handleSubscribe} disabled={createCheckout.isPending}>
-                {createCheckout.isPending ? "A processar..." : (
-                  <>
-                    <Send className="mr-2 h-4 w-4 text-white" />
-                    Distribuir Agora
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
+              {s < 4 && <div className={`h-1 flex-1 mx-2 rounded ${step > s ? "bg-primary" : "bg-slate-200"}`} />}
+            </div>
+          ))}
         </div>
 
-        {/* Subscription Offer */}
-        <Card className="border-2 border-blue-100 shadow-xl overflow-hidden bg-white bg-gradient-to-br from-blue-100/60 via-white to-white">
-          <CardHeader className="text-center space-y-4 pb-8">
-            <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm font-semibold mx-auto shadow-sm">
-              <Sparkles className="h-4 w-4" />
-              Oferta Especial
-            </div>
-            <CardTitle className="text-3xl font-bold text-slate-900 tracking-tight">
-              Distribua Seu Currículo Automaticamente
-            </CardTitle>
-            <CardDescription className="text-lg font-medium text-slate-600">
-              Por apenas <span className="text-blue-600 font-bold">€2,99</span> por mês
-            </CardDescription>
-          </CardHeader>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-7">
+            {step === 1 && (
+              <Card>
+                <CardHeader><CardTitle>Dados Pessoais</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border-2 border-dashed">
+                    <div className="w-16 h-16 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center">
+                      {resumeData.photoUrl ? <img src={resumeData.photoUrl} className="w-full h-full object-cover" /> : <User className="text-slate-400" />}
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>Escolher Foto</Button>
+                    <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" accept="image/*" />
+                  </div>
+                  <Input placeholder="Nome Completo" value={resumeData.fullName} onChange={(e) => setResumeData({...resumeData, fullName: e.target.value})} />
+                  <Input placeholder="Email" value={resumeData.email} onChange={(e) => setResumeData({...resumeData, email: e.target.value})} />
+                  <Input placeholder="Telefone" value={resumeData.phone} onChange={(e) => setResumeData({...resumeData, phone: e.target.value})} />
+                  <Input placeholder="Localização" value={resumeData.location} onChange={(e) => setResumeData({...resumeData, location: e.target.value})} />
+                  <Textarea placeholder="Resumo" value={resumeData.summary} onChange={(e) => setResumeData({...resumeData, summary: e.target.value})} />
+                  <Button onClick={() => setStep(2)} disabled={!isStep1Complete} className="w-full">Próximo</Button>
+                </CardContent>
+              </Card>
+            )}
 
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <h3 className="font-bold text-slate-800 text-lg">O que você recebe:</h3>
-                <div className="space-y-3">
-                  {[
-                    "Distribuição automática para 6 portais",
-                    "Matching inteligente com IA",
-                    "Notificações em tempo real",
-                    "Estatísticas detalhadas",
-                    "Histórico completo",
-                    "Suporte prioritário",
-                    "Cancele quando quiser"
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-blue-600 shrink-0" />
-                      <span className="text-slate-700 font-medium text-sm">{item}</span>
+            {step === 2 && (
+              <Card>
+                <CardHeader><CardTitle>Experiência</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  {resumeData.experiences.map((exp) => (
+                    <div key={exp.id} className="p-4 border rounded-lg relative">
+                      <Button variant="ghost" size="icon" className="absolute right-2 top-2" onClick={() => removeExperience(exp.id)}><Trash2 className="h-4 w-4" /></Button>
+                      <Input className="mb-2" placeholder="Empresa" value={exp.company} onChange={(e) => {
+                        const updated = resumeData.experiences.map(x => x.id === exp.id ? { ...x, company: e.target.value } : x);
+                        setResumeData({ ...resumeData, experiences: updated });
+                      }} />
+                      <Input placeholder="Cargo" value={exp.position} onChange={(e) => {
+                        const updated = resumeData.experiences.map(x => x.id === exp.id ? { ...x, position: e.target.value } : x);
+                        setResumeData({ ...resumeData, experiences: updated });
+                      }} />
                     </div>
                   ))}
-                </div>
-              </div>
+                  <Button variant="outline" onClick={addExperience} className="w-full">+ Adicionar</Button>
+                  <div className="flex gap-2"><Button variant="outline" onClick={() => setStep(1)} className="flex-1">Voltar</Button><Button onClick={() => setStep(3)} className="flex-1">Próximo</Button></div>
+                </CardContent>
+              </Card>
+            )}
 
-              <div className="space-y-4">
-                <h3 className="font-bold text-slate-800 text-lg text-center md:text-left">Plano Mensal</h3>
-                <div className="bg-slate-50 rounded-xl p-6 border border-slate-100 shadow-inner space-y-4">
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Preço mensal</p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-black text-slate-900">€2,99</span>
-                      <span className="text-slate-500 font-medium">/mês</span>
+            {step === 3 && (
+              <Card>
+                <CardHeader><CardTitle>Educação</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  {resumeData.education.map((edu) => (
+                    <div key={edu.id} className="p-4 border rounded-lg relative">
+                       <Button variant="ghost" size="icon" className="absolute right-2 top-2" onClick={() => removeEducation(edu.id)}><Trash2 className="h-4 w-4" /></Button>
+                       <Input placeholder="Escola/Universidade" value={edu.school} onChange={(e) => {
+                         const updated = resumeData.education.map(x => x.id === edu.id ? { ...x, school: e.target.value } : x);
+                         setResumeData({ ...resumeData, education: updated });
+                       }} />
                     </div>
+                  ))}
+                  <Button variant="outline" onClick={addEducation} className="w-full">+ Adicionar</Button>
+                  <div className="flex gap-2"><Button variant="outline" onClick={() => setStep(2)} className="flex-1">Voltar</Button><Button onClick={() => setStep(4)} className="flex-1">Próximo</Button></div>
+                </CardContent>
+              </Card>
+            )}
+
+            {step === 4 && (
+              <Card>
+                <CardHeader><CardTitle>Competências</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input value={newSkill} onChange={(e) => setNewSkill(e.target.value)} placeholder="Ex: React" />
+                    <Button onClick={addSkill}>Add</Button>
                   </div>
-                  <div className="border-t border-slate-200 pt-4 space-y-2">
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2">✓ Sem cartão de crédito agora</p>
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2">✓ Cancele a qualquer momento</p>
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2">✓ Sem compromissos</p>
+                  <div className="flex flex-wrap gap-2">
+                    {resumeData.skills.map(s => <Badge key={s} variant="secondary">{s} <Trash2 className="w-3 h-3 ml-2 cursor-pointer" onClick={() => removeSkill(s)} /></Badge>)}
                   </div>
-                </div>
-              </div>
+                  <div className="flex gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setStep(3)} className="flex-1">Voltar</Button>
+                    <Button 
+                      onClick={handleSaveResume} 
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      disabled={createResume.isPending}
+                    >
+                      {createResume.isPending ? "A salvar..." : "Gerar Meu Currículo"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Preview Col */}
+          <div className="lg:col-span-5">
+            <div className="sticky top-10 bg-white border rounded-xl shadow-lg min-h-[600px] overflow-hidden">
+               <div className="bg-slate-900 p-6 text-white">
+                  <h2 className="text-xl font-bold uppercase">{resumeData.fullName || "Seu Nome"}</h2>
+                  <p className="text-blue-400 text-sm">{resumeData.experiences[0]?.position || "Cargo"}</p>
+               </div>
+               <div className="p-6 space-y-4">
+                  <div>
+                    <h4 className="text-xs font-bold uppercase text-slate-400 border-b mb-2">Contato</h4>
+                    <p className="text-xs text-slate-600">{resumeData.email}</p>
+                    <p className="text-xs text-slate-600">{resumeData.phone}</p>
+                  </div>
+                  {resumeData.summary && (
+                    <div>
+                      <h4 className="text-xs font-bold uppercase text-slate-400 border-b mb-2">Resumo</h4>
+                      <p className="text-xs text-slate-700">{resumeData.summary}</p>
+                    </div>
+                  )}
+               </div>
             </div>
-
-            <Button
-              size="lg"
-              className="w-full text-lg h-14 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all font-bold text-white"
-              onClick={handleSubscribe}
-              disabled={createCheckout.isPending}
-            >
-              {createCheckout.isPending ? "A processar..." : (
-                <>
-                  <CreditCard className="mr-2 h-5 w-5 text-white" />
-                  Subscrever Agora
-                </>
-              )}
-            </Button>
-
-            <Alert className="bg-white border-slate-200">
-              <CheckCircle2 className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-slate-500 text-xs font-medium">
-                Pagamento seguro processado pelo Stripe. Seus dados estão protegidos.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
-
-        {/* Portals Info */}
-        <Card className="border shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Portais de Emprego Integrados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {["Indeed Portugal", "Talenter", "Timing", "Eurofirms", "Net Empregos", "OLX Empregos"].map((portal) => (
-                <div key={portal} className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 border border-slate-100">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0" />
-                  <span className="text-sm font-semibold text-slate-700">{portal}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="text-center pb-12">
-          <Button variant="ghost" onClick={() => router.push("/")} className="text-slate-500">
-            Voltar à Página Inicial
-          </Button>
+          </div>
         </div>
       </div>
     </div>
