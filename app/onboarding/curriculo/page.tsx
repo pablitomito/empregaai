@@ -90,7 +90,8 @@ export default function CurriculoBuilder() {
 },
   });
 
-  const handleSaveResume = () => {
+  const handleSaveResume = (e: any) => {
+    e.preventDefault();
   if (!resumeData.fullName) {
     toast.error("Por favor, preencha o nome completo.");
     return;
@@ -333,8 +334,9 @@ export default function CurriculoBuilder() {
                             Anterior
                           </Button>
                           <Button 
+                          type="button"
                             onClick={handleSaveResume} 
-                            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12"
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold h-12"
                           >
                             Gerar Meu Currículo
                           </Button>
