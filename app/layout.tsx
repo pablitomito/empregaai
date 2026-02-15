@@ -23,15 +23,13 @@ export const metadata: Metadata = {
   keywords: "emprego Portugal, curriculo IA, encontrar trabalho, emprego 2026",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${poppins.variable}`}>
-      <body className="font-sans antialiased bg-white text-gray-900">
-        {children}
+    <html lang="pt">
+      <body>
+        <TRPCProvider>
+          {children}
+        </TRPCProvider>
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react"; // Adicionado useEffect e useState
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,18 +8,22 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
 import { CheckCircle2, CreditCard, Download, Send, Sparkles, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 import { toast } from "sonner";
 
 export default function CurriculoSucesso() {
   const router = useRouter();
+  
+  // ESTA É A CHAVE PARA O BUILD PASSAR:
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const createCheckout = trpc.subscription.createCheckout.useMutation({
-    // Corrigido: Tipagem explícita para o TypeScript parar de reclamar
     onSuccess: (data: { url: string | null }) => {
       if (data.url) {
         toast.info("A redirecionar para o checkout...");
-        // Melhor que window.open para evitar bloqueio de pop-ups
         window.location.href = data.url;
       } else {
         toast.error("Erro: URL de checkout não encontrada.");
@@ -32,6 +37,11 @@ export default function CurriculoSucesso() {
   const handleSubscribe = () => {
     createCheckout.mutate();
   };
+
+  // Se estiver no servidor (durante o build), não renderiza nada que use tRPC
+  if (!isMounted) {
+    return null; 
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 py-12">
