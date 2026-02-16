@@ -80,31 +80,67 @@ export default function CurriculoBuilder() {
     setResumeData({ ...resumeData, linkedinUrl: url });
   };
 
-  const createResume = trpc.resume.create.useMutation({
-    onSuccess: () => {
-      toast.success("Currículo criado com sucesso!");
-      handleSuccessRedirect();
-    },
-   onError: (error: any) => {
-  toast.error(`Erro ao criar currículo: ${error.message}`);
-},
-  });
+// Deixe assim:
+const createResume = trpc.resume.create.useMutation({
+  onError: (error: any) => {
+    toast.error(`Erro ao criar currículo: ${error.message}`);
+  },
+});
 
-  const handleSaveResume = (e: any) => {
-    e.preventDefault();
-  if (!resumeData.fullName) {
-    toast.error("Por favor, preencha o nome completo.");
-    return;
-  }
+const handleSaveResume = async (e: any) => {
+    if (e && e.preventDefault) e.preventDefault();
+    
+    if (!resumeData.fullName) {
+      toast.error("Por favor, preencha o nome completo.");
+      return;
+    }
 
-  toast.success("Currículo gerado! Redirecionando para o checkout...");
-  
-  // Esse comando ignora o servidor e te leva direto para a próxima página
-  router.push("/onboarding/checkout"); 
-};
+    const loadingToast = toast.loading("A guardar os seus dados...");
 
-  const handleSuccessRedirect = () => {
-    setTimeout(() => setStep(5), 500);
+    try {
+      // 1. ORGANIZAÇÃO DOS DADOS CORRIGIDA
+      const dataToSave = {
+        fullName: resumeData.fullName,
+        email: resumeData.email,
+        phone: resumeData.phone,
+        address: resumeData.location || "", 
+        aboutMe: resumeData.summary || "",
+        photoUrl: resumeData.photoUrl || "",
+        
+        // ADICIONE ESTA LINHA: O banco exige um userEmail
+        userEmail: resumeData.email, 
+
+        experiences: (resumeData.experiences || []).map(exp => ({
+          company: exp.company || "",
+          role: exp.position || "",
+          period: `${exp.startDate || ''} - ${exp.endDate || 'Atual'}`,
+          // CORREÇÃO AQUI: Enviamos apenas a String, sem os colchetes [ ]
+          description: exp.description || "" 
+        })),
+
+        education: (resumeData.education || []).map(edu => ({
+          school: edu.school || "",
+          degree: edu.degree || "",
+          period: edu.graduationYear || ""
+        })),
+
+        skills: resumeData.skills || [],
+      };
+
+      console.log("Tentando salvar com estes dados:", dataToSave);
+
+      // 2. Chamada ao banco
+      await createResume.mutateAsync(dataToSave);
+      
+      toast.dismiss(loadingToast);
+      toast.success("Dados salvos com sucesso!");
+
+      // 3. Redirecionamento
+      router.push("/onboarding/checkout");
+
+    } catch (error: any) {
+       // ... resto do seu catch
+    }
   };
 
   // Funções de Gerenciamento (Experiencia/Educação/Skills) mantidas...

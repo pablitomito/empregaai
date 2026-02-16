@@ -1,11 +1,14 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { trpc } from "@/lib/trpc"; // Aponta para o trpc que você mostrou na pasta lib
+// ❌ REMOVA ESSA LINHA: import { trpc } from "@/lib/trpc"; 
+
+// ✅ ADICIONE O SEU ROUTER DO SERVIDOR (o caminho depende de onde você criou ele)
+import { appRouter } from "@/app/server/index"; // <--- Ajuste para o seu caminho real
 
 const handler = (req: Request) =>
   fetchRequestHandler({
-    endpoint: "/api/auth/trpc", // Ajustado para o caminho da sua pasta
+    endpoint: "/api/auth/trpc",
     req,
-    router: trpc as any, // Usamos o 'any' aqui para ignorar o erro de tipo por enquanto
+    router: appRouter, // <--- Aqui TEM que ser o router do servidor
     createContext: () => ({}),
   });
 

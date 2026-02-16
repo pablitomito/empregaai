@@ -340,3 +340,19 @@ html {
 .animate-marquee:hover {
   animation-play-state: paused; /* Para o carrossel quando o usuário passa o rato */
 }
+/* No seu CSS ou dentro de uma tag <style> no template */
+.antialiased-pdf {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  body {
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+  }
+}

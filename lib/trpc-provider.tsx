@@ -10,7 +10,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: "/api/trpc", // Ajusta se o teu backend for noutro URL
+          url: 'http://localhost:3000/api/auth/trpc', // Ajusta se o teu backend for noutro URL
         }),
       ],
     })
