@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
-import { TRPCProvider } from "@/lib/trpc-provider";
+
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -27,9 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt">
       <body>
-        <TRPCProvider>
+       
           {children}
-        </TRPCProvider>
+       
       </body>
     </html>
   );

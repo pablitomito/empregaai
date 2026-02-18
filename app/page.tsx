@@ -123,7 +123,7 @@ export default function LandingPage() {
                 {/* CTA Principal */}
                 <div className="space-y-4">
                   <Link 
-                    href="/cadastro"
+                    href="onboarding/cadastro"
                     className="inline-flex items-center gap-3 bg-[#10B981] hover:bg-[#059669] text-white px-10 py-5 rounded-xl text-lg font-bold shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:scale-105 hover:-translate-y-1"
                   >
                     Encontrar Minha Vaga Agora
@@ -669,7 +669,7 @@ export default function LandingPage() {
             
             {/* CTA Gigante */}
             <Link 
-              href="/cadastro"
+              href="onboarding/cadastro"
               className="inline-flex items-center gap-4 bg-[#10B981] hover:bg-[#059669] text-white px-12 py-6 rounded-2xl text-xl md:text-2xl font-bold shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:scale-105 hover:-translate-y-1"
             >
               Começar Teste Gratuito / Criar Meu Perfil

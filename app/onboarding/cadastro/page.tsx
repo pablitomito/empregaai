@@ -115,56 +115,40 @@ export default function CadastroPage() {
 // --- SUBSTITUA O SEU BLOCO PELO BLOCO ABAIXO ---
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+  setIsLoading(true);
+
   try {
     const response = await axios.post(
-      'https://empregaai-api.onrender.com/api/auth/register', // <-- ESTA URL
-      formData
+      'https://empregaai-backend-production.up.railway.app/api/auth/register',
+      {
+        fullName: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        password: formData.password,
+      },
+      { withCredentials: true }
     );
-    // ...
-  } catch (err) {
-    // ...
-  }
 
+    const data = response.data?.data || response.data;
 
-    try {
-      // 2. Chamada para a API
-      const response = await axios({
-        method: 'post',
-        url: 'https://empregaai-api.onrender.com/api/auth/register', 
-        data: {
-          fullName: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          password: formData.password,
-        },
-        withCredentials: true,
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      // 3. Pegar os dados (Versão Segura)
-      const responseData = response.data?.data || response.data;
-
-      // 4. Se tiver o token, salva e entra!
-      if (responseData && (responseData.token || responseData.accessToken)) {
-        const token = responseData.token || responseData.accessToken;
-        const user = responseData.user || responseData;
-
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-
-        router.push('/onboarding/objetivo');
-      } else {
-        throw new Error('Servidor não enviou o token de acesso.');
-      }
-      
-    } catch (err: any) {
-      console.error('Erro detalhado:', err.response?.data || err.message);
-      setErrors({
-        submit: err.response?.data?.message || 'Erro ao criar conta. Tente novamente.',
-      });
-    } finally {
-      setIsLoading(false);
+    if (!data || !data.token) {
+      throw new Error("Token não recebido do servidor.");
     }
-  };
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    router.push("/onboarding/objetivo");
+
+  } catch (err: any) {
+    console.error("Erro:", err.response?.data || err.message);
+    setErrors({
+      submit: err.response?.data?.message || "Erro ao criar conta.",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   // --- FIM DO BLOCO ---
   // Login com Google
   const handleGoogleLogin = () => {
@@ -321,7 +305,7 @@ export default function CadastroPage() {
           {/* Título */}
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-              TESTE ATUALIZACAO RENDER
+              Você está a um passo de transformar a sua carreira. 
             </h1>
             <p className="text-gray-600">
               Junte-se a <strong className="text-blue-600">+15.000 profissionais</strong> que já automatizaram a sua procura de emprego.
@@ -536,7 +520,7 @@ export default function CadastroPage() {
             <div className="text-center pt-4">
               <p className="text-sm text-gray-600">
                 Já tem uma conta?{' '}
-                <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline">
+                <Link href="/onboarding/login" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline">
                   Entrar
                 </Link>
               </p>

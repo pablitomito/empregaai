@@ -43,40 +43,44 @@ export default function LoginPage() {
     setError(''); // Limpar erro ao digitar
   };
 
-  // Submeter formulário
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-      setError('Por favor, preencha todos os campos');
-      return;
-    }
+  if (!formData.email || !formData.password) {
+    setError('Por favor, preencha todos os campos');
+    return;
+  }
 
-    setIsLoading(true);
-    setError('');
+  setIsLoading(true);
+  setError('');
 
-    try {
-      const response = await axios.post(
-  `https://empregaai-api.onrender.com/api/auth/login`,
-  formData
-);
+  try {
+    const response = await axios.post(
+      "https://empregaai-api.onrender.com/api/auth/login",
+      {
+        email: formData.email,
+        password: formData.password,
+      },
+      { withCredentials: true }
+    );
 
-      // Salvar token e dados do usuário
-    localStorage.setItem('token', response.data.data.token);
-localStorage.setItem('user', JSON.stringify(response.data.data.user));
+    const data = response.data?.data || response.data;
 
-router.push('/dashboard');
-      
-    } catch (err: any) {
-      console.error('Erro ao fazer login:', err);
-      setError(
-        err.response?.data?.message || 
-        'Email ou palavra-passe incorretos. Tente novamente.'
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    router.push("/dashboard");
+
+  } catch (err: any) {
+    console.error("Erro ao fazer login:", err);
+    setError(
+      err.response?.data?.message ||
+      "Email ou palavra-passe incorretos. Tente novamente."
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Login com Google
   const handleGoogleLogin = () => {
@@ -359,8 +363,8 @@ router.push('/dashboard');
             <div className="text-center pt-4">
               <p className="text-sm text-gray-600">
                 Ainda não tem conta?{' '}
-                <Link href="/cadastro" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline">
-                  TESTE CADASTRO RENDER
+                <Link href="/onboarding/cadastro" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline">
+                  Criar agora
                 </Link>
               </p>
             </div>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { trpc } from "@/lib/trpc";
+import axios from "axios";
 import { CheckCircle2, CreditCard, Download, Send, Sparkles, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -18,19 +18,49 @@ export default function CurriculoSucesso() {
     setIsMounted(true);
   }, []);
 
-  const createCheckout = trpc.subscription.createCheckout.useMutation({
-    onSuccess: (data: { url: string | null }) => {
-      if (data.url) {
-        toast.info("A redirecionar para o checkout...");
-        window.location.href = data.url;
-      } else {
-        toast.error("Erro: URL de checkout não encontrada.");
+  // -----------------------------
+  // SUBSTITUIÇÃO DO tRPC
+  // Mantém mutate + isPending
+  // -----------------------------
+  const [isPending, setIsPending] = useState(false);
+
+  const createCheckout = {
+    mutate: async () => {
+      try {
+        setIsPending(true);
+
+        const token = localStorage.getItem("token");
+
+        const res = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/subscription/create-checkout`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const url = res.data?.url;
+
+        if (url) {
+          toast.info("A redirecionar para o checkout...");
+          window.location.href = url;
+        } else {
+          toast.error("Erro: URL de checkout não encontrada.");
+        }
+      } catch (error: any) {
+        toast.error(
+          `Erro ao criar checkout: ${
+            error.response?.data?.message || error.message
+          }`
+        );
+      } finally {
+        setIsPending(false);
       }
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao criar checkout: ${error.message}`);
-    },
-  });
+    isPending,
+  };
 
   const handleSubscribe = () => {
     createCheckout.mutate();
@@ -96,7 +126,11 @@ export default function CurriculoSucesso() {
               <p className="text-sm text-muted-foreground">
                 Aumente suas chances distribuindo para Indeed, Talenter, Eurofirms e outros portais líderes.
               </p>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 shadow-md text-white" onClick={handleSubscribe} disabled={createCheckout.isPending}>
+              <Button
+                className="w-full bg-blue-600 hover:bg-blue-700 shadow-md text-white"
+                onClick={handleSubscribe}
+                disabled={createCheckout.isPending}
+              >
                 {createCheckout.isPending ? "A processar..." : (
                   <>
                     <Send className="mr-2 h-4 w-4 text-white" />
