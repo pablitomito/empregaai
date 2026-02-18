@@ -119,7 +119,7 @@ export default function CadastroPage() {
 
   try {
     const response = await axios.post(
-      'https://empregaai-backend-production.up.railway.app/api/auth/register',
+      'https://empregaai-api-production-9249.up.railway.app/api/auth/register',
       {
         fullName: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,

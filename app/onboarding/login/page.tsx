@@ -56,7 +56,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   try {
     const response = await axios.post(
-      "https://empregaai-backend-production.up.railway.app/api/auth/login",
+      "https://empregaai-api-production-9249.up.railway.app/api/auth/login",
       {
         email: formData.email,
         password: formData.password,
