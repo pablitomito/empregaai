@@ -3,7 +3,9 @@
 /* Paleta: Royal Blue (#2563EB) → Deep Purple (#7C3AED) + Emerald Green (#10B981) */
 
 /* Importar fontes do Google Fonts */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
 
 @tailwind base;
 @tailwind components;
@@ -355,4 +357,59 @@ html {
     margin: 0;
     -webkit-print-color-adjust: exact;
   }
+}
+
+/* Container do dropdown */
+.iti__country-list {
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 8px 0;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Cada item */
+.iti__country {
+  padding: 10px 14px;
+  transition: background 0.15s ease, transform 0.15s ease;
+  border-radius: 8px;
+}
+
+/* Hover premium */
+.iti__country:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+/* Nome do país */
+.iti__country-name {
+  color: #fff;
+  font-weight: 500;
+}
+
+/* DDI */
+.iti__dial-code {
+  color: #8ecbff;
+  font-weight: 600;
+}
+
+/* Bandeira */
+.iti__flag {
+  border-radius: 4px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+}
+/* Área do DDI + bandeira */
+.iti--allow-dropdown .iti__flag-container {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px 0 0 12px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* Ícone da setinha */
+.iti__arrow {
+  border-top-color: #8ecbff !important;
 }

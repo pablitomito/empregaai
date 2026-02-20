@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
-
 import { useCoverLetter } from "@/hooks/useCoverLetter";
 
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-
+import intlTelInput from "intl-tel-input";
 import {
   Plus,
   Trash2,
@@ -64,6 +63,10 @@ interface ResumeData {
   languages: Language[];
   objective?: string;
 }
+interface PhoneInputProps {
+  resumeData: any; 
+  setResumeData: (value: any) => void;
+}
 
 export default function CurriculoBuilder() {
   const router = useRouter();
@@ -90,7 +93,34 @@ export default function CurriculoBuilder() {
     objective: "",
   });
 
-  const [isPremium, setIsPremium] = useState<boolean>(false);
+const [isPremium, setIsPremium] = useState<boolean>(false);
+const phoneRef = useRef<HTMLInputElement | null>(null);
+
+useEffect(() => {
+  if (!phoneRef.current) return;
+
+  const iti = intlTelInput(phoneRef.current, {
+    initialCountry: "pt",              // Portugal como padrão
+    separateDialCode: false,           // ESSENCIAL: não fixa o +351
+    preferredCountries: ["pt", "br"],  // mantém PT e BR em destaque
+    utilsScript:
+      "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/utils.js",
+  } as any);
+
+  const handleInput = () => {
+    const fullNumber = iti.getNumber();
+    setResumeData((prev) => ({ ...prev, phone: fullNumber }));
+  };
+
+  phoneRef.current.addEventListener("input", handleInput);
+
+  return () => {
+    phoneRef.current?.removeEventListener("input", handleInput);
+    iti.destroy();
+  };
+}, []);
+
+
 
   // -----------------------------
   // UPLOAD DE FOTO
@@ -178,22 +208,28 @@ export default function CurriculoBuilder() {
   // -----------------------------
   // ADICIONAR / REMOVER CAMPOS
   // -----------------------------
-  const addExperience = () => {
-    setResumeData((prev) => ({
-      ...prev,
-      experiences: [
-        ...prev.experiences,
-        {
-          id: Date.now().toString(),
-          company: "",
-          position: "",
-          startDate: "",
-          endDate: "",
-          description: "",
-        },
-      ],
-    }));
-  };
+ const addExperience = () => {
+  setResumeData((prev) => ({
+    ...prev,
+    experiences: [
+      ...prev.experiences,
+      {
+        id: Date.now().toString(),
+        company: "",
+        position: "",
+        description: "",
+
+        startMonth: "",
+        startYear: "",
+        endMonth: "",
+        endYear: "",
+        current: false,
+        startDate: "", 
+        endDate: "", 
+      },
+    ],
+  }));
+};
 
   const removeExperience = (id: string) => {
     setResumeData((prev) => ({
@@ -367,59 +403,169 @@ export default function CurriculoBuilder() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+
+  {/* Nome Completo */}
+                    <div className="space-y-4">
+
+                    {/* Nome Completo */}
                     <div className="space-y-2">
-                      <Label>Nome Completo *</Label>
-                      <Input
-                        value={resumeData.fullName}
-                        onChange={(e) => setResumeData((prev) => ({ ...prev, fullName: e.target.value }))}
+                      <p className="text-black font-medium text-sm">Nome Completo *</p>
+
+                      <input
+                        type="text"
                         placeholder="Ex: João Silva"
+                        className="
+                          py-4
+                          w-full
+                          rounded-xl
+                          bg-white/10
+                          backdrop-blur-md
+                          border border-white/20
+                          text-white
+                          placeholder:text-gray-300
+                          shadow-[0_0_20px_rgba(255,255,255,0.05)]
+                          transition-all
+                          focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
+                          focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
+                        "
                       />
                     </div>
+
+                    {/* LinkedIn */}
                     <div className="space-y-2">
-                      <Label>LinkedIn URL</Label>
+                      <p className="text-black font-medium text-sm">LinkedIn URL</p>
+
                       <div className="relative">
                         <Linkedin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                        <Input className="pl-9" placeholder="linkedin.com/in/perfil" value={resumeData.linkedinUrl || ""} onChange={(e) => validateLinkedin(e.target.value)} />
+                        <input
+                          type="text"
+                          placeholder="linkedin.com/in/perfil"
+                          value={resumeData.linkedinUrl || ""}
+                          onChange={(e) => validateLinkedin(e.target.value)}
+                          className="
+                            py-4
+                            pl-9
+                            w-full
+                            rounded-xl
+                            bg-white/10
+                            backdrop-blur-md
+                            border border-white/20
+                            text-white
+                            placeholder:text-gray-300
+                            shadow-[0_0_20px_rgba(255,255,255,0.05)]
+                            transition-all
+                            focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
+                            focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
+                          "
+                        />
                       </div>
                     </div>
+
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Email Profissional *</Label>
-                      <Input
-                        type="email"
-                        value={resumeData.email}
-                        onChange={(e) => setResumeData((prev) => ({ ...prev, email: e.target.value }))}
-                        placeholder="joao@exemplo.com"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Telefone / WhatsApp *</Label>
-                      <Input
-                        value={resumeData.phone}
-                        onChange={(e) => setResumeData((prev) => ({ ...prev, phone: e.target.value }))}
-                        placeholder="+351 9xx xxx xxx"
-                      />
-                    </div>
-                  </div>
+
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <p className="text-black font-medium text-sm">Email Profissional *</p>
+
+                  <input
+                    type="email"
+                    value={resumeData.email}
+                    onChange={(e) =>
+                      setResumeData((prev) => ({ ...prev, email: e.target.value }))
+                    }
+                    placeholder="joao@exemplo.pt"
+                    className="
+                      py-4
+                      w-full
+                      rounded-xl
+                      bg-white/10
+                      backdrop-blur-md
+                      border border-black/20
+                      text-black
+                      placeholder:text-gray-400
+                      placeholder:text-center
+                      shadow-[0_0_20px_rgba(0,0,0,0.05)]
+                      transition-all
+                      focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
+                      focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
+                    "
+                  />
+                </div>
+
+                {/* Telefone */}
+                <div className="space-y-2">
+                  <p className="text-black font-medium text-sm">Telefone / WhatsApp *</p>
+
+                  <input
+                    ref={phoneRef}
+                    type="tel"
+                    placeholder="9xx xxx xxx"
+                    className="
+                      pl-[90px]
+                      py-4
+                      w-full
+                      rounded-xl
+                      bg-white/10
+                      backdrop-blur-md
+                      border border-black/20
+                      text-black
+                      placeholder:text-gray-400
+                      placeholder:text-center
+                      shadow-[0_0_20px_rgba(0,0,0,0.05)]
+                      transition-all
+                      focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
+                      focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
+                    "
+                  />
+                </div>
+
+              </div>
+
+
+
+
+
+
 
                   <div className="space-y-2">
-                    <Label>Localização</Label>
-                    <Input
+                    <p className="text-black font-medium text-sm">Localização</p>
+
+                    <input
                       value={resumeData.location}
-                      onChange={(e) => setResumeData((prev) => ({ ...prev, location: e.target.value }))}
+                      onChange={(e) =>
+                        setResumeData((prev) => ({ ...prev, location: e.target.value }))
+                      }
                       placeholder="Cidade, País"
+                      className="
+                        py-4
+                        w-full
+                        rounded-xl
+                        bg-white/10
+                        backdrop-blur-md
+                        border border-black/20
+                        text-black
+                        placeholder:text-gray-400
+                        placeholder:text-center
+                        shadow-[0_0_20px_rgba(0,0,0,0.05)]
+                        transition-all
+                        focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
+                        focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
+                      "
                     />
                   </div>
 
+
                   <div className="space-y-2">
-                    <Label>Resumo Profissional</Label>
+                    <Label>Resumo Pessoal</Label>
                     <Textarea
                       value={resumeData.summary}
                       onChange={(e) => setResumeData((prev) => ({ ...prev, summary: e.target.value }))}
-                      placeholder="Fale sobre suas principais conquistas..."
+                      placeholder="Fale um pouco sobre..."
                       rows={4}
                     />
                   </div>
@@ -434,58 +580,241 @@ export default function CurriculoBuilder() {
             {/* PASSO 2: EXPERIÊNCIA */}
             {step === 2 && (
               <Card className="border-none shadow-xl">
-                <CardHeader>
-                  <CardTitle>Experiência Profissional</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {resumeData.experiences.map((exp) => (
-                    <div key={exp.id} className="p-4 border rounded-xl space-y-4 bg-white dark:bg-slate-900 shadow-sm relative">
-                      <Button variant="ghost" size="icon" onClick={() => removeExperience(exp.id)} className="absolute right-2 top-2 text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                      <div className="grid grid-cols-2 gap-4 pt-4">
-                        <Input
-                          placeholder="Empresa"
-                          value={exp.company}
-                          onChange={(e) => {
-                            const updated = resumeData.experiences.map((x) => (x.id === exp.id ? { ...x, company: e.target.value } : x));
-                            setResumeData((prev) => ({ ...prev, experiences: updated }));
-                          }}
-                        />
-                        <Input
-                          placeholder="Cargo"
-                          value={exp.position}
-                          onChange={(e) => {
-                            const updated = resumeData.experiences.map((x) => (x.id === exp.id ? { ...x, position: e.target.value } : x));
-                            setResumeData((prev) => ({ ...prev, experiences: updated }));
-                          }}
-                        />
-                      </div>
-                      <Textarea
-                        placeholder="Descreva suas responsabilidades..."
-                        value={exp.description}
-                        onChange={(e) => {
-                          const updated = resumeData.experiences.map((x) => (x.id === exp.id ? { ...x, description: e.target.value } : x));
-                          setResumeData((prev) => ({ ...prev, experiences: updated }));
-                        }}
-                      />
-                    </div>
-                  ))}
+  <CardHeader>
+    <CardTitle className="text-2xl font-semibold text-black">
+      Experiência Profissional
+    </CardTitle>
+  </CardHeader>
 
-                  <Button variant="outline" onClick={addExperience} className="w-full border-dashed py-6">
-                    <Plus className="mr-2 h-4 w-4" /> Adicionar Experiência
-                  </Button>
+  <CardContent className="space-y-6">
 
-                  <div className="flex gap-4 mt-6">
-                    <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
-                      Anterior
-                    </Button>
-                    <Button onClick={() => setStep(3)} className="flex-1">
-                      Próximo: Formação
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+    {resumeData.experiences.map((exp) => (
+      <div
+        key={exp.id}
+        className="p-6 rounded-xl bg-white shadow-[0_0_20px_rgba(0,0,0,0.05)] space-y-6 relative"
+      >
+        {/* Botão de remover */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => removeExperience(exp.id)}
+          className="absolute right-3 top-3 text-red-500 hover:text-red-700"
+        >
+          <Trash2 className="h-5 w-5" />
+        </Button>
+
+        {/* Empresa + Cargo */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <p className="text-black font-medium text-sm">Empresa</p>
+            <input
+              placeholder="Nome da empresa"
+              value={exp.company}
+              onChange={(e) => {
+                const updated = resumeData.experiences.map((x) =>
+                  x.id === exp.id ? { ...x, company: e.target.value } : x
+                );
+                setResumeData((prev) => ({ ...prev, experiences: updated }));
+              }}
+              className="
+                py-4 w-full rounded-xl bg-white/10 backdrop-blur-md
+                border border-black/20 text-black placeholder:text-gray-400
+                placeholder:text-center shadow-[0_0_20px_rgba(0,0,0,0.05)]
+                transition-all focus:ring-2 focus:ring-light-blue-color
+                focus:border-light-blue-color
+              "
+            />
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-black font-medium text-sm">Cargo</p>
+            <input
+              placeholder="Cargo ocupado"
+              value={exp.position}
+              onChange={(e) => {
+                const updated = resumeData.experiences.map((x) =>
+                  x.id === exp.id ? { ...x, position: e.target.value } : x
+                );
+                setResumeData((prev) => ({ ...prev, experiences: updated }));
+              }}
+              className="
+                py-4 w-full rounded-xl bg-white/10 backdrop-blur-md
+                border border-black/20 text-black placeholder:text-gray-400
+                placeholder:text-center shadow-[0_0_20px_rgba(0,0,0,0.05)]
+                transition-all focus:ring-2 focus:ring-light-blue-color
+                focus:border-light-blue-color
+              "
+            />
+          </div>
+        </div>
+
+        {/* Datas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* Início */}
+          <div className="space-y-2">
+            <p className="text-black font-medium text-sm">Início</p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* Mês início */}
+              <select
+                value={exp.startMonth}
+                onChange={(e) => {
+                  const updated = resumeData.experiences.map((x) =>
+                    x.id === exp.id ? { ...x, startMonth: e.target.value } : x
+                  );
+                  setResumeData((prev) => ({ ...prev, experiences: updated }));
+                }}
+                className="
+                  py-3 rounded-xl bg-white/10 border border-black/20
+                  text-black shadow-sm focus:ring-2 focus:ring-light-blue-color
+                "
+              >
+                <option value="">Mês</option>
+                {[
+                  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+                ].map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+
+              {/* Ano início */}
+              <select
+                value={exp.startYear}
+                onChange={(e) => {
+                  const updated = resumeData.experiences.map((x) =>
+                    x.id === exp.id ? { ...x, startYear: e.target.value } : x
+                  );
+                  setResumeData((prev) => ({ ...prev, experiences: updated }));
+                }}
+                className="
+                  py-3 rounded-xl bg-white/10 border border-black/20
+                  text-black shadow-sm focus:ring-2 focus:ring-light-blue-color
+                "
+              >
+                <option value="">Ano</option>
+                {Array.from({ length: 45 }, (_, i) => 1980 + i).map((year) => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Fim */}
+          <div className="space-y-2">
+            <p className="text-black font-medium text-sm">Fim</p>
+
+            {/* Checkbox trabalho atual */}
+            <label className="flex items-center gap-2 text-black text-sm mb-1">
+              <input
+                type="checkbox"
+                checked={exp.current}
+                onChange={(e) => {
+                  const updated = resumeData.experiences.map((x) =>
+                    x.id === exp.id ? { ...x, current: e.target.checked } : x
+                  );
+                  setResumeData((prev) => ({ ...prev, experiences: updated }));
+                }}
+              />
+              Trabalho atual
+            </label>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* Mês fim */}
+              <select
+                disabled={exp.current}
+                value={exp.endMonth}
+                onChange={(e) => {
+                  const updated = resumeData.experiences.map((x) =>
+                    x.id === exp.id ? { ...x, endMonth: e.target.value } : x
+                  );
+                  setResumeData((prev) => ({ ...prev, experiences: updated }));
+                }}
+                className={`
+                  py-3 rounded-xl bg-white/10 border border-black/20
+                  text-black shadow-sm focus:ring-2 focus:ring-light-blue-color
+                  ${exp.current ? "opacity-40 cursor-not-allowed" : ""}
+                `}
+              >
+                <option value="">Mês</option>
+                {[
+                  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+                ].map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+
+              {/* Ano fim */}
+              <select
+                disabled={exp.current}
+                value={exp.endYear}
+                onChange={(e) => {
+                  const updated = resumeData.experiences.map((x) =>
+                    x.id === exp.id ? { ...x, endYear: e.target.value } : x
+                  );
+                  setResumeData((prev) => ({ ...prev, experiences: updated }));
+                }}
+                className={`
+                  py-3 rounded-xl bg-white/10 border border-black/20
+                  text-black shadow-sm focus:ring-2 focus:ring-light-blue-color
+                  ${exp.current ? "opacity-40 cursor-not-allowed" : ""}
+                `}
+              >
+                <option value="">Ano</option>
+                {Array.from({ length: 45 }, (_, i) => 1980 + i).map((year) => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Descrição */}
+        <div className="space-y-2">
+          <p className="text-black font-medium text-sm">Responsabilidades</p>
+          <textarea
+            placeholder="Descreva suas responsabilidades..."
+            value={exp.description}
+            onChange={(e) => {
+              const updated = resumeData.experiences.map((x) =>
+                x.id === exp.id ? { ...x, description: e.target.value } : x
+              );
+              setResumeData((prev) => ({ ...prev, experiences: updated }));
+            }}
+            className="
+              w-full h-32 rounded-xl bg-white/10 border border-black/20
+              text-black placeholder:text-gray-400 p-4
+              shadow-[0_0_20px_rgba(0,0,0,0.05)]
+              focus:ring-2 focus:ring-light-blue-color
+            "
+          />
+        </div>
+      </div>
+    ))}
+
+    {/* Botão adicionar */}
+    <Button
+      variant="outline"
+      onClick={addExperience}
+      className="w-full border-dashed py-6 text-black"
+    >
+      <Plus className="mr-2 h-4 w-4" /> Adicionar Experiência
+    </Button>
+
+    {/* Navegação */}
+    <div className="flex gap-4 mt-6">
+      <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+        Anterior
+      </Button>
+      <Button onClick={() => setStep(3)} className="flex-1">
+        Próximo: Formação
+      </Button>
+    </div>
+  </CardContent>
+</Card>
+
             )}
 
             {/* PASSO 3: FORMAÇÃO */}

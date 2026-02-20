@@ -10,13 +10,20 @@ const CurriculoSchema = new mongoose.Schema({
     summary: String,
   },
   experiences: [{
-    position: String,
-    company: String,
-    startDate: String,
-    endDate: String,
-    current: Boolean,
-    description: String,
-  }],
+  position: String,
+  company: String,
+
+  startMonth: String,
+  startYear: String,
+
+  endMonth: String,
+  endYear: String,
+
+  current: Boolean,
+
+  description: String,
+}],
+
   education: [{
     degree: String,
     institution: String,

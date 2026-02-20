@@ -9,14 +9,21 @@ export interface PersonalInfo {
 }
 
 export interface Experience {
-  id: number;
-  position: string;
+  id: string;
+
   company: string;
-  startDate: string;
-  endDate: string;
-  isCurrent: boolean;
+  position: string;
   description: string;
+
+  startMonth: string;
+  startYear: string;
+
+  endMonth: string;
+  endYear: string;
+
+  current: boolean;
 }
+
 
 export interface Education {
   id: number;
