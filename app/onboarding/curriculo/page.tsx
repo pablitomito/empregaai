@@ -1,5 +1,11 @@
 "use client";
-
+import { AITextImprover } from "@/components/AITextImprover";
+import {
+  Briefcase,
+  GraduationCap,
+  Award,
+  Globe,
+} from "lucide-react"; // Adicione estes ícones
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -701,19 +707,37 @@ export default function CurriculoBuilder() {
                   </div>
 
                   {/* Resumo Pessoal */}
-                  <div className="space-y-2">
+               <div className="space-y-2">
+                  <div className="flex items-center justify-between">
                     <Label>Resumo Pessoal</Label>
-                    <Textarea
-                      value={resumeData.summary}
-                      onChange={(e) => setResumeData((prev) => ({ ...prev, summary: e.target.value }))}
-                      placeholder="Fale um pouco sobre você, suas competências e objetivos profissionais..."
-                      rows={4}
+                    
+                    {/* ✅ BOTÃO AI AQUI */}
+                    <AITextImprover
+                      currentText={resumeData.summary}
+                      context="summary"
+                      onImprove={(improved) => setResumeData(prev => ({ 
+                        ...prev, 
+                        summary: improved 
+                      }))}
                     />
-                    <p className="text-xs text-gray-500">
-                      {resumeData.summary?.length || 0} caracteres 
-                      {resumeData.summary?.length < 100 && ' · Mínimo recomendado: 100'}
-                    </p>
                   </div>
+
+                  <Textarea
+                    value={resumeData.summary}
+                    onChange={(e) => setResumeData((prev) => ({ 
+                      ...prev, 
+                      summary: e.target.value 
+                    }))}
+                    placeholder="Profissional experiente com sólida trajetória em..."
+                    rows={4}
+                    className="resize-none"
+                  />
+                  
+                  <p className="text-xs text-gray-500">
+                    {resumeData.summary?.length || 0} caracteres 
+                    {resumeData.summary?.length < 100 && ' · Mínimo recomendado: 100'}
+                  </p>
+                </div>
 
                   <Button 
                     onClick={() => setStep(2)} 
@@ -903,27 +927,24 @@ export default function CurriculoBuilder() {
                         <div className="flex items-center justify-between">
                           <p className="text-black font-medium text-sm">Responsabilidades</p>
                           
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => generateAISuggestions(exp.id, exp.position, exp.company)}
-                            disabled={!exp.position || generatingAI === exp.id}
-                            className="text-xs gap-1 border-purple-300 text-purple-700 hover:bg-purple-50"
-                          >
-                            {generatingAI === exp.id ? (
-                              <>Gerando...</>
-                            ) : (
-                              <>
-                                <Sparkles className="w-3 h-3" />
-                                Gerar com IA
-                              </>
-                            )}
-                          </Button>
+                          {/* ✅ BOTÃO AI AQUI */}
+                          <AITextImprover
+                            currentText={exp.description}
+                            context="responsibilities"
+                            onImprove={(improved) => {
+                              const updated = resumeData.experiences.map((x) =>
+                                x.id === exp.id ? { ...x, description: improved } : x
+                              );
+                              setResumeData((prev) => ({ ...prev, experiences: updated }));
+                            }}
+                            disabled={!exp.position} // Só habilita se preencheu o cargo
+                          />
                         </div>
 
                         <textarea
-                          placeholder="Descreva suas responsabilidades e conquistas..."
+                          placeholder="• Desenvolvi aplicações web usando React
+                      - Implementei testes aumentando cobertura em 40%
+                      - Liderei equipe de 3 desenvolvedores"
                           value={exp.description}
                           onChange={(e) => {
                             const updated = resumeData.experiences.map((x) =>
@@ -931,10 +952,9 @@ export default function CurriculoBuilder() {
                             );
                             setResumeData((prev) => ({ ...prev, experiences: updated }));
                           }}
-                          className="w-full h-32 rounded-xl bg-white/10 border border-black/20 text-black placeholder:text-gray-400 p-4 focus:ring-2 focus:ring-blue-500"
+                          className="w-full h-32 rounded-xl bg-white/10 border border-black/20 text-black placeholder:text-gray-400 p-4 focus:ring-2 focus:ring-blue-500 resize-none"
                         />
                         
-                        {/* ✅ NOVO: Character counter */}
                         <p className="text-xs text-gray-500">
                           {exp.description?.length || 0} caracteres
                           {exp.description && exp.description.length < 50 && ' · Mínimo recomendado: 50'}
@@ -1235,27 +1255,40 @@ export default function CurriculoBuilder() {
       {/* ============================
           OBJETIVO / CARTA CURTA
       ============================ */}
-      <div className="pt-4 border-t space-y-2">
-        <Label>Objetivo / Carta curta</Label>
+     <div className="pt-4 border-t space-y-2">
+        <div className="flex items-center justify-between">
+          <Label>Objetivo Profissional</Label>
+          
+          {/* ✅ BOTÃO AI AQUI */}
+          <AITextImprover
+            currentText={resumeData.objective || ""}
+            context="objective"
+            onImprove={(improved) => setResumeData(prev => ({ 
+              ...prev, 
+              objective: improved 
+            }))}
+          />
+        </div>
 
         <p className="text-sm text-slate-500">
-          Isso aparece no topo do seu currículo.
+          Resuma em 1-2 frases seu objetivo e proposta de valor.
         </p>
 
-        <div
-          contentEditable
-          suppressContentEditableWarning
-          onInput={handleObjectiveInput}
-          className="
-            min-h-[120px] p-4 rounded-xl bg-white/10 backdrop-blur-md 
-            border border-black/20 text-black shadow-[0_0_20px_rgba(0,0,0,0.05)]
-            focus:ring-2 focus:ring-blue-500 outline-none
-          "
-        >
-          {resumeData.objective}
-        </div>
+        <Textarea
+          value={resumeData.objective || ""}
+          onChange={(e) => setResumeData(prev => ({ 
+            ...prev, 
+            objective: e.target.value 
+          }))}
+          placeholder="Profissional de TI com 5+ anos buscando posição sênior..."
+          rows={3}
+          className="resize-none"
+        />
+        
+        <p className="text-xs text-gray-500">
+          {resumeData.objective?.length || 0} caracteres
+        </p>
       </div>
-
 
       {/* ============================
           BOTÕES FINAIS
@@ -1300,6 +1333,9 @@ export default function CurriculoBuilder() {
           </div>
 
           {/* ✅ MELHORIA: Preview com indicador de atualização */}
+          
+
+{/* ✅ PREVIEW COMPLETAMENTE REDESENHADO */}
           <div className="lg:col-span-5">
             <div className="sticky top-10">
               <div className="flex items-center justify-between mb-4">
@@ -1309,84 +1345,133 @@ export default function CurriculoBuilder() {
                 </h3>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl overflow-hidden min-h-[700px] border border-slate-200">
-                {/* Top Header do Currículo */}
-                <div className="bg-slate-900 p-8 text-white flex gap-6 items-center">
-                  <div className="w-24 h-24 rounded-lg bg-slate-700 overflow-hidden flex-shrink-0 border-2 border-slate-600">
-                    {previewData.photoUrl ? (
-                      <img src={previewData.photoUrl} className="w-full h-full object-cover" alt="Foto" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <User className="w-8 h-8 opacity-20" />
+              {/* ✅ NOVO PREVIEW - DESIGN MODERNO */}
+              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+                
+                {/* HEADER MODERNO COM GRADIENTE */}
+                <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-8 pb-12">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
+                  
+                  <div className="relative flex items-start gap-6">
+                    {/* Foto */}
+                    <div className="w-28 h-28 rounded-2xl bg-white/20 backdrop-blur-sm overflow-hidden border-4 border-white/30 shadow-2xl flex-shrink-0">
+                      {previewData.photoUrl ? (
+                        <img src={previewData.photoUrl} className="w-full h-full object-cover" alt="Foto" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-white/10">
+                          <User className="w-12 h-12 text-white/50" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info Principal */}
+                    <div className="flex-1 text-white">
+                      <h2 className="text-3xl font-bold mb-2 tracking-tight">
+                        {previewData.fullName || "Seu Nome Completo"}
+                      </h2>
+                      <p className="text-blue-100 text-lg font-medium mb-4">
+                        {previewData.experiences[0]?.position || "Título Profissional"}
+                      </p>
+                      
+                      {/* Contatos em cards */}
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        {previewData.email && (
+                          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+                            <Mail className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate text-xs">{previewData.email}</span>
+                          </div>
+                        )}
+                        {previewData.phone && (
+                          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+                            <Phone className="w-4 h-4 flex-shrink-0" />
+                            <span className="text-xs">{previewData.phone}</span>
+                          </div>
+                        )}
+                        {previewData.location && (
+                          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+                            <MapPin className="w-4 h-4 flex-shrink-0" />
+                            <span className="text-xs">{previewData.location}</span>
+                          </div>
+                        )}
+                        {previewData.linkedinUrl && (
+                          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+                            <Linkedin className="w-4 h-4 flex-shrink-0" />
+                            <span className="text-xs">LinkedIn</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold uppercase tracking-wide">{previewData.fullName || "SEU NOME"}</h2>
-                    <p className="text-blue-400 font-medium">{previewData.experiences[0]?.position || "Cargo Pretendido"}</p>
-                    <div className="mt-2 flex flex-wrap gap-3 text-[10px] opacity-80">
-                      {previewData.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" /> {previewData.location}
-                        </span>
-                      )}
-                      {previewData.email && (
-                        <span className="flex items-center gap-1">
-                          <Mail className="w-3 h-3" /> {previewData.email}
-                        </span>
-                      )}
-                      {previewData.phone && (
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3" /> {previewData.phone}
-                        </span>
-                      )}
-                      {previewData.linkedinUrl && (
-                        <span className="flex items-center gap-1">
-                          <Linkedin className="w-3 h-3" /> LinkedIn
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
 
-                <div className="p-8 space-y-6">
-                  {/* Objetivo */}
+                {/* CONTEÚDO */}
+                <div className="p-8 space-y-8">
+                  
+                  {/* Objetivo - Destaque */}
                   {previewData.objective && (
-                    <section>
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-2">Objetivo</h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{previewData.objective}</p>
-                    </section>
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border-l-4 border-blue-600">
+                      <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        Objetivo Profissional
+                      </h3>
+                      <p className="text-gray-800 leading-relaxed font-medium">
+                        {previewData.objective}
+                      </p>
+                    </div>
                   )}
 
                   {/* Resumo */}
                   {previewData.summary && (
                     <section>
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-2">Resumo</h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{previewData.summary}</p>
+                      <h3 className="text-base font-bold text-gray-900 mb-3 pb-2 border-b-2 border-gray-200">
+                        Resumo
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        {previewData.summary}
+                      </p>
                     </section>
                   )}
 
                   {/* Experiência */}
                   {previewData.experiences.length > 0 && (
                     <section>
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">
-                        Experiência Profissional
-                      </h4>
-                      <div className="space-y-4">
-                        {previewData.experiences.map((exp) => (
-                          <div key={exp.id}>
-                            <div className="flex justify-between items-start">
-                              <p className="font-bold text-slate-800 dark:text-slate-100">
-                                {exp.position || "Cargo"}
-                              </p>
-                              <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500">
-                                {exp.startMonth}/{exp.startYear} – {exp.current ? "Atual" : `${exp.endMonth}/${exp.endYear}`}
-                              </span>
+                      <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-gray-200">
+                        <Briefcase className="w-5 h-5 text-blue-600" />
+                        <h3 className="text-base font-bold text-gray-900">
+                          Experiência Profissional
+                        </h3>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        {previewData.experiences.map((exp, index) => (
+                          <div key={exp.id} className="relative pl-8">
+                            {/* Timeline */}
+                            <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200">
+                              <div className="absolute top-0 -left-1.5 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></div>
                             </div>
-                            <p className="text-xs text-blue-600 font-medium">{exp.company}</p>
-                            <p className="text-xs mt-1 text-slate-500 line-clamp-3">
-                              {exp.description}
-                            </p>
+                            
+                            <div className="space-y-2">
+                              <div className="flex items-start justify-between gap-4">
+                                <div>
+                                  <h4 className="font-bold text-gray-900">
+                                    {exp.position || "Cargo"}
+                                  </h4>
+                                  <p className="text-sm font-medium text-blue-600">
+                                    {exp.company}
+                                  </p>
+                                </div>
+                                <span className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600 whitespace-nowrap">
+                                  {exp.startMonth}/{exp.startYear} – {exp.current ? "Atual" : `${exp.endMonth}/${exp.endYear}`}
+                                </span>
+                              </div>
+                              
+                              {exp.description && (
+                                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                                  {exp.description}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1396,28 +1481,50 @@ export default function CurriculoBuilder() {
                   {/* Educação */}
                   {previewData.education.length > 0 && (
                     <section>
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">Formação</h4>
-                      <div className="space-y-3">
+                      <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-gray-200">
+                        <GraduationCap className="w-5 h-5 text-purple-600" />
+                        <h3 className="text-base font-bold text-gray-900">
+                          Formação Académica
+                        </h3>
+                      </div>
+                      
+                      <div className="space-y-4">
                         {previewData.education.map((edu) => (
-                          <div key={edu.id}>
-                            <p className="font-semibold text-sm">{edu.degree}</p>
-                            <p className="text-xs text-slate-600">{edu.school}</p>
-                            <p className="text-xs text-slate-500">{edu.graduationYear}</p>
+                          <div key={edu.id} className="flex gap-4">
+                            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <GraduationCap className="w-6 h-6 text-purple-600" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-900">{edu.degree || "Curso"}</h4>
+                              <p className="text-sm text-gray-600">{edu.school || "Instituição"}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {edu.graduationYear && `Conclusão: ${edu.graduationYear}`}
+                              </p>
+                            </div>
                           </div>
                         ))}
                       </div>
                     </section>
                   )}
 
-                  {/* Skills */}
+                  {/* Competências */}
                   {previewData.skills.length > 0 && (
                     <section>
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">Competências</h4>
+                      <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-gray-200">
+                        <Award className="w-5 h-5 text-amber-600" />
+                        <h3 className="text-base font-bold text-gray-900">
+                          Competências
+                        </h3>
+                      </div>
+                      
                       <div className="flex flex-wrap gap-2">
                         {previewData.skills.map((skill) => (
-                          <Badge key={skill} variant="secondary" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-normal">
+                          <span
+                            key={skill}
+                            className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-200"
+                          >
                             {skill}
-                          </Badge>
+                          </span>
                         ))}
                       </div>
                     </section>
@@ -1426,12 +1533,21 @@ export default function CurriculoBuilder() {
                   {/* Idiomas */}
                   {previewData.languages.length > 0 && (
                     <section>
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">Idiomas</h4>
-                      <div className="flex flex-wrap gap-3">
+                      <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-gray-200">
+                        <Globe className="w-5 h-5 text-green-600" />
+                        <h3 className="text-base font-bold text-gray-900">
+                          Idiomas
+                        </h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3">
                         {previewData.languages.map((lang) => (
-                          <div key={lang.id} className="text-sm">
-                            <div className="font-medium">{lang.name}</div>
-                            <div className="text-xs text-slate-500">{lang.level}</div>
+                          <div key={lang.id} className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
+                            <div className="w-2 h-2 bg-green-600 rounded-full flex-shrink-0"></div>
+                            <div>
+                              <p className="font-medium text-sm text-gray-900">{lang.name}</p>
+                              <p className="text-xs text-gray-500">{lang.level}</p>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1440,24 +1556,41 @@ export default function CurriculoBuilder() {
 
                   {/* Carta de Apresentação */}
                   {letter && (
-                    <section>
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">Carta de Apresentação (IA)</h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{letter}</p>
+                    <section className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200">
+                      <h3 className="text-sm font-bold text-purple-900 uppercase tracking-wide mb-3">
+                        Carta de Apresentação
+                      </h3>
+                      <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                        {letter}
+                      </p>
                     </section>
                   )}
                 </div>
               </div>
 
+              {/* Botões de ação */}
               <div className="mt-6 flex flex-col gap-3">
                 {isPremium ? (
-                  <Button className="bg-green-600 hover:bg-green-700 text-white h-12">Baixar Currículo em PDF</Button>
+                  <Button className="bg-green-600 hover:bg-green-700 text-white h-12 w-full shadow-lg hover:shadow-xl transition-all">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Baixar Currículo em PDF
+                  </Button>
                 ) : (
                   <>
-                    <Button disabled className="bg-gray-300 text-gray-600 cursor-not-allowed h-12">
+                    <Button disabled className="bg-gray-200 text-gray-500 cursor-not-allowed h-12 w-full">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
                       Baixar Currículo (Premium)
                     </Button>
-                    <Button onClick={() => router.push("/checkout")} className="bg-blue-600 hover:bg-blue-700 text-white h-12">
-                      Fazer Upgrade para Desbloquear
+                    <Button 
+                      onClick={() => router.push("/checkout")} 
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-12 w-full shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      Fazer Upgrade para Premium
                     </Button>
                   </>
                 )}
