@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import { useCoverLetter } from "@/hooks/useCoverLetter";
-
+import type { Experience } from "app/types/cv.types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,16 +23,10 @@ import {
   Mail,
   Phone,
   CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  Save,
 } from "lucide-react";
-
-interface Experience {
-  id: string;
-  company: string;
-  position: string;
-  startDate: string;
-  endDate: string;
-  description: string;
-}
 
 interface Education {
   id: string;
@@ -63,21 +57,29 @@ interface ResumeData {
   languages: Language[];
   objective?: string;
 }
-interface PhoneInputProps {
-  resumeData: any; 
-  setResumeData: (value: any) => void;
-}
 
 export default function CurriculoBuilder() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
   const { loading: loadingLetter, letter, generate } = useCoverLetter();
 
   const [step, setStep] = useState<number>(1);
   const [newSkill, setNewSkill] = useState<string>("");
   const [newLanguageName, setNewLanguageName] = useState<string>("");
   const [newLanguageLevel, setNewLanguageLevel] = useState<LanguageLevel>("Básico");
+  
+  // ✅ NOVO: Estados para validação
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  
+  // ✅ NOVO: Estado para AI generation
+  const [generatingAI, setGeneratingAI] = useState<string | null>(null);
+  
+  // ✅ NOVO: Estado para sugestões de skills
+  const [skillSuggestions, setSkillSuggestions] = useState<string[]>([]);
+  
+  // ✅ NOVO: Estado para indicador de atualização do preview
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const [resumeData, setResumeData] = useState<ResumeData>({
     fullName: "",
     email: "",
@@ -86,45 +88,191 @@ export default function CurriculoBuilder() {
     summary: "",
     photoUrl: undefined,
     linkedinUrl: undefined,
-    experiences: [],
+    experiences: [] as Experience[],
     education: [],
     skills: [],
     languages: [],
     objective: "",
   });
 
-const [isPremium, setIsPremium] = useState<boolean>(false);
-const phoneRef = useRef<HTMLInputElement | null>(null);
+  const [isPremium, setIsPremium] = useState<boolean>(false);
+  const phoneRef = useRef<HTMLInputElement | null>(null);
 
-useEffect(() => {
-  if (!phoneRef.current) return;
+  // ✅ MELHORIA #1: AUTO-SAVE + CARREGAR RASCUNHO
+  useEffect(() => {
+    // Carregar dados salvos do localStorage
+    const saved = localStorage.getItem('resume-draft');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setResumeData(parsed);
+        toast.success('✓ Rascunho recuperado!', { duration: 2000 });
+      } catch (error) {
+        console.error('Erro ao carregar rascunho:', error);
+      }
+    }
+  }, []);
 
-  const iti = intlTelInput(phoneRef.current, {
-    initialCountry: "pt",              // Portugal como padrão
-    separateDialCode: false,           // ESSENCIAL: não fixa o +351
-    preferredCountries: ["pt", "br"],  // mantém PT e BR em destaque
-    utilsScript:
-      "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/utils.js",
-  } as any);
+  // Auto-save a cada mudança (com debounce de 2 segundos)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (resumeData.fullName || resumeData.email) {
+        localStorage.setItem('resume-draft', JSON.stringify(resumeData));
+        toast.success('Progresso salvo automaticamente', { 
+          duration: 1000,
+          icon: <Save className="w-4 h-4" />
+        });
+      }
+    }, 2000);
 
-  const handleInput = () => {
-    const fullNumber = iti.getNumber();
-    setResumeData((prev) => ({ ...prev, phone: fullNumber }));
+    return () => clearTimeout(timer);
+  }, [resumeData]);
+
+  // ✅ MELHORIA #2: VALIDAÇÃO DE EMAIL
+  const validateEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setErrors(prev => ({ ...prev, email: '' }));
+      return false;
+    }
+    if (!regex.test(email)) {
+      setErrors(prev => ({ ...prev, email: 'Email inválido' }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, email: '' }));
+    return true;
   };
 
-  phoneRef.current.addEventListener("input", handleInput);
-
-  return () => {
-    phoneRef.current?.removeEventListener("input", handleInput);
-    iti.destroy();
+  // ✅ MELHORIA #2: VALIDAÇÃO DE TELEFONE
+  const validatePhone = (phone: string) => {
+    const cleaned = phone.replace(/\D/g, '');
+    if (!phone) {
+      setErrors(prev => ({ ...prev, phone: '' }));
+      return false;
+    }
+    if (cleaned.length < 9) {
+      setErrors(prev => ({ ...prev, phone: 'Telefone incompleto (mínimo 9 dígitos)' }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, phone: '' }));
+    return true;
   };
-}, []);
 
+  // ✅ MELHORIA #3: VALIDAÇÃO DE LINKEDIN
+  const validateLinkedin = (url: string) => {
+    if (!url) {
+      setErrors(prev => ({ ...prev, linkedin: '' }));
+      return true;
+    }
+    const pattern = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/;
+    if (!pattern.test(url)) {
+      setErrors(prev => ({ ...prev, linkedin: 'Formato inválido. Ex: linkedin.com/in/seu-perfil' }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, linkedin: '' }));
+    setResumeData((prev) => ({ ...prev, linkedinUrl: url }));
+    return true;
+  };
 
+  // ✅ MELHORIA #4: GERAR SUGESTÕES DE SKILLS BASEADAS NO CARGO
+  useEffect(() => {
+    const position = resumeData.experiences[0]?.position?.toLowerCase() || '';
+    if (!position) {
+      setSkillSuggestions([]);
+      return;
+    }
 
-  // -----------------------------
-  // UPLOAD DE FOTO
-  // -----------------------------
+    const suggestions: {[key: string]: string[]} = {
+      'desenvolvedor': ['JavaScript', 'Git', 'React', 'Node.js', 'TypeScript', 'Python'],
+      'designer': ['Figma', 'Photoshop', 'Illustrator', 'UI/UX', 'Prototipagem', 'InDesign'],
+      'gestor': ['Liderança', 'Excel', 'PowerPoint', 'Gestão de Equipas', 'Planeamento'],
+      'marketing': ['SEO', 'Google Ads', 'Analytics', 'Social Media', 'Content Marketing'],
+      'vendas': ['Negociação', 'CRM', 'Prospeção', 'Relacionamento', 'Metas'],
+      'analista': ['Excel Avançado', 'Power BI', 'SQL', 'Análise de Dados', 'Relatórios'],
+      'engenheiro': ['AutoCAD', 'SolidWorks', 'Gestão de Projetos', 'Normas Técnicas'],
+    };
+
+    const key = Object.keys(suggestions).find(k => position.includes(k));
+    if (key) {
+      setSkillSuggestions(suggestions[key]);
+    } else {
+      setSkillSuggestions([]);
+    }
+  }, [resumeData.experiences]);
+
+  // ✅ MELHORIA #5: GERAR RESPONSABILIDADES COM IA
+  const generateAISuggestions = async (expId: string, position: string, company: string) => {
+    if (!position) {
+      toast.error('Preencha o cargo primeiro');
+      return;
+    }
+
+    setGeneratingAI(expId);
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/ai/generate-responsibilities`,
+        { position, company },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      const suggestions = response.data.suggestions || response.data.data;
+
+      // Atualizar experiência com sugestões
+      const updated = resumeData.experiences.map((x) =>
+        x.id === expId ? { ...x, description: suggestions } : x
+      );
+      setResumeData((prev) => ({ ...prev, experiences: updated }));
+
+      toast.success('✨ Sugestões geradas com IA!');
+    } catch (error) {
+      console.error('Erro ao gerar sugestões:', error);
+      toast.error('Erro ao gerar sugestões. Tente novamente.');
+    } finally {
+      setGeneratingAI(null);
+    }
+  };
+
+  // ✅ MELHORIA #6: INDICADOR DE PREVIEW ATUALIZANDO
+  useEffect(() => {
+    setIsUpdating(true);
+    const timer = setTimeout(() => setIsUpdating(false), 300);
+    return () => clearTimeout(timer);
+  }, [resumeData]);
+
+  // Otimização: useMemo para preview
+  const previewData = useMemo(() => resumeData, [resumeData]);
+
+  // Configuração do telefone (mantido do original)
+  useEffect(() => {
+    if (!phoneRef.current) return;
+
+    const iti = intlTelInput(phoneRef.current, {
+      initialCountry: "pt",
+      separateDialCode: false,
+      preferredCountries: ["pt", "br"],
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/utils.js",
+    } as any);
+
+    const handleInput = () => {
+      const fullNumber = iti.getNumber();
+      setResumeData((prev) => ({ ...prev, phone: fullNumber }));
+      validatePhone(fullNumber);
+    };
+
+    phoneRef.current.addEventListener("input", handleInput);
+
+    return () => {
+      phoneRef.current?.removeEventListener("input", handleInput);
+      iti.destroy();
+    };
+  }, []);
+
+  // Upload de foto (mantido)
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -139,20 +287,7 @@ useEffect(() => {
     toast.success("Foto carregada!");
   };
 
-  // -----------------------------
-  // VALIDAÇÃO LINKEDIN
-  // -----------------------------
-  const validateLinkedin = (url: string) => {
-    const pattern = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/;
-    if (url && !pattern.test(url)) {
-      toast.warning("Formato inválido. Exemplo: linkedin.com/in/seu-perfil");
-    }
-    setResumeData((prev) => ({ ...prev, linkedinUrl: url }));
-  };
-
-  // -----------------------------
-  // GERAR CURRÍCULO COM IA
-  // -----------------------------
+  // Gerar currículo (mantido)
   const handleGenerateResume = async () => {
     if (!resumeData.fullName) {
       toast.error("Por favor, preencha o nome completo.");
@@ -171,11 +306,7 @@ useEffect(() => {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/ai/generate-resume`,
         { resumeData },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       toast.dismiss(loadingToast);
@@ -188,9 +319,7 @@ useEffect(() => {
     }
   };
 
-  // -----------------------------
-  // GERAR CARTA DE APRESENTAÇÃO
-  // -----------------------------
+  // Gerar carta (mantido)
   const handleGenerateLetter = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -205,31 +334,26 @@ useEffect(() => {
     });
   };
 
-  // -----------------------------
-  // ADICIONAR / REMOVER CAMPOS
-  // -----------------------------
- const addExperience = () => {
-  setResumeData((prev) => ({
-    ...prev,
-    experiences: [
-      ...prev.experiences,
-      {
-        id: Date.now().toString(),
-        company: "",
-        position: "",
-        description: "",
-
-        startMonth: "",
-        startYear: "",
-        endMonth: "",
-        endYear: "",
-        current: false,
-        startDate: "", 
-        endDate: "", 
-      },
-    ],
-  }));
-};
+  // Funções de adicionar/remover (mantidas)
+  const addExperience = () => {
+    setResumeData((prev) => ({
+      ...prev,
+      experiences: [
+        ...prev.experiences,
+        {
+          id: Date.now().toString(),
+          company: "",
+          position: "",
+          description: "",
+          startMonth: "",
+          startYear: "",
+          endMonth: "",
+          endYear: "",
+          current: false,
+        },
+      ],
+    }));
+  };
 
   const removeExperience = (id: string) => {
     setResumeData((prev) => ({
@@ -263,21 +387,22 @@ useEffect(() => {
   const addSkill = () => {
     const trimmed = newSkill.trim();
     if (!trimmed) return;
+    if (resumeData.skills.includes(trimmed)) {
+      toast.warning('Competência já adicionada');
+      return;
+    }
     setResumeData((prev) => ({ ...prev, skills: [...prev.skills, trimmed] }));
     setNewSkill("");
+    toast.success(`"${trimmed}" adicionada`);
   };
 
   const removeSkill = (skill: string) => {
     setResumeData((prev) => ({ ...prev, skills: prev.skills.filter((s) => s !== skill) }));
   };
 
-  // -----------------------------
-  // IDIOMAS
-  // -----------------------------
   const addLanguage = () => {
     const name = newLanguageName.trim();
     if (!name) return;
-    // evita duplicados simples
     if (resumeData.languages.some((l) => l.name.toLowerCase() === name.toLowerCase())) {
       toast.warning("Idioma já adicionado.");
       return;
@@ -292,23 +417,28 @@ useEffect(() => {
     setNewLanguageLevel("Básico");
   };
 
-  const removeLanguage = (id: string) => {
-    setResumeData((prev) => ({ ...prev, languages: prev.languages.filter((l) => l.id !== id) }));
-  };
+ const removeLanguage = (id: string) => {
+  setResumeData(prev => ({
+    ...prev,
+    languages: prev.languages.filter(lang => lang.id !== id)
+  }));
+};
 
-  // -----------------------------
-  // OBJETIVO (contentEditable)
-  // -----------------------------
   const handleObjectiveInput = (e: React.FormEvent<HTMLElement>) => {
     const text = (e.target as HTMLElement).innerText;
     setResumeData((prev) => ({ ...prev, objective: text }));
   };
 
-  const isStep1Complete = Boolean(resumeData.fullName && resumeData.email && resumeData.phone);
+  // ✅ MELHORIA: Validação mais robusta do step 1
+  const isStep1Complete = Boolean(
+    resumeData.fullName && 
+    resumeData.email && 
+    resumeData.phone &&
+    !errors.email &&
+    !errors.phone
+  );
 
-  // -----------------------------
-  // VERIFICAR PREMIUM
-  // -----------------------------
+  // Verificar premium (mantido)
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -323,30 +453,37 @@ useEffect(() => {
       .catch(() => setIsPremium(false));
   }, []);
 
-  // -----------------------------
-  // PROGRESS BAR HELPERS
-  // -----------------------------
   const steps = [1, 2, 3, 4];
 
-  const stepCircleClass = (s: number) =>
-    `w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all cursor-pointer ${
-      step >= s ? "bg-primary text-white shadow-lg" : "bg-slate-200 text-slate-500"
-    }`;
+  // ✅ FUNÇÃO PARA LIMPAR RASCUNHO
+  const clearDraft = () => {
+    if (confirm('Tem certeza que deseja recomeçar? Todo o progresso será perdido.')) {
+      localStorage.removeItem('resume-draft');
+      window.location.reload();
+    }
+  };
 
-  const progressBarSegmentClass = (s: number) =>
-    `h-1 flex-1 mx-2 rounded ${step > s ? "bg-primary" : "bg-slate-200"}`;
-
-  // -----------------------------
-  // RENDER
-  // -----------------------------
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto p-4 md:p-10">
         {/* Header */}
         <div className="mb-10 text-center lg:text-left">
-          <Badge className="mb-2 bg-blue-100 text-blue-700 hover:bg-blue-100 border-none px-3 py-1">
-            Modelo base para moldar o seu currículo
-          </Badge>
+          <div className="flex items-center justify-between mb-4">
+            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none px-3 py-1">
+              Modelo base para moldar o seu currículo
+            </Badge>
+            
+            {/* ✅ NOVO: Botão Limpar Rascunho */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearDraft}
+              className="text-gray-500 hover:text-red-600"
+            >
+              Recomeçar
+            </Button>
+          </div>
+
           <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
             Crie o seu Currículo Profissional
           </h1>
@@ -355,23 +492,60 @@ useEffect(() => {
           </p>
         </div>
 
-        {/* Barra de Progresso (interativa) */}
-        <div className="mb-10 flex items-center justify-between max-w-2xl mx-auto lg:mx-0">
-          {steps.map((s) => (
-            <div key={s} className="flex items-center flex-1 last:flex-none">
-              <div
-                onClick={() => setStep(s)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setStep(s)}
-                className={stepCircleClass(s)}
-                aria-label={`Ir para passo ${s}`}
-              >
-                {step > s ? <CheckCircle2 className="w-5 h-5" /> : s}
+        {/* ✅ MELHORIA #7: BARRA DE PROGRESSO MELHORADA */}
+        <div className="mb-10 max-w-4xl mx-auto">
+          {/* Título do passo atual */}
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold">
+              {step === 1 && "Dados Pessoais"}
+              {step === 2 && "Experiência Profissional"}
+              {step === 3 && "Formação Académica"}
+              {step === 4 && "Finalização"}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Passo {step} de 4 · Tempo estimado: {[5, 8, 4, 6][step - 1]} minutos
+            </p>
+          </div>
+
+          {/* Barra visual */}
+          <div className="flex items-center justify-between">
+            {steps.map((s) => (
+              <div key={s} className="flex items-center flex-1 last:flex-none">
+                <div
+                  onClick={() => setStep(s)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setStep(s)}
+                  className={`
+                    w-12 h-12 rounded-full flex items-center justify-center 
+                    font-bold cursor-pointer transition-all
+                    ${step >= s 
+                      ? 'bg-blue-600 text-white shadow-lg scale-110' 
+                      : 'bg-gray-200 text-gray-400 hover:bg-gray-300'
+                    }
+                  `}
+                  aria-label={`Ir para passo ${s}`}
+                >
+                  {step > s ? <CheckCircle2 className="w-6 h-6" /> : s}
+                </div>
+                
+                {s < steps.length && (
+                  <div className={`
+                    h-1 flex-1 mx-2 rounded transition-all
+                    ${step > s ? 'bg-blue-600' : 'bg-gray-200'}
+                  `} />
+                )}
               </div>
-              {s < steps.length && <div className={progressBarSegmentClass(s)} />}
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Labels dos passos */}
+          <div className="flex justify-between mt-2 text-xs text-gray-500">
+            <span>Dados</span>
+            <span>Experiência</span>
+            <span>Formação</span>
+            <span>Finalizar</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -384,6 +558,37 @@ useEffect(() => {
                   <CardTitle>Dados Pessoais</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* ✅ NOVO: LinkedIn Import Placeholder */}
+                  <div className="p-6 bg-blue-50 rounded-xl border-2 border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Linkedin className="w-8 h-8 text-blue-600" />
+                        <div>
+                          <h4 className="font-semibold text-gray-900">
+                            Importar do LinkedIn
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            Economize 70% do tempo de preenchimento
+                          </p>
+                        </div>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                        onClick={() => {
+                          toast.info('🚀 Funcionalidade em desenvolvimento! Por agora, preencha manualmente.');
+                        }}
+                      >
+                        Importar Perfil
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="text-center text-sm text-gray-500">
+                    ou preencha manualmente
+                  </div>
+
                   {/* Upload de Foto */}
                   <div className="flex flex-col items-center sm:flex-row gap-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200">
                     <div className="relative w-24 h-24 rounded-full bg-slate-200 overflow-hidden border-4 border-white shadow-md flex items-center justify-center">
@@ -403,175 +608,119 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  
-
-  {/* Nome Completo */}
-                    <div className="space-y-4">
-
-                    {/* Nome Completo */}
-                    <div className="space-y-2">
-                      <p className="text-black font-medium text-sm">Nome Completo *</p>
-
-                      <input
-                        type="text"
-                        placeholder="Ex: João Silva"
-                        className="
-                          py-4
-                          w-full
-                          rounded-xl
-                          bg-white/10
-                          backdrop-blur-md
-                          border border-white/20
-                          text-white
-                          placeholder:text-gray-300
-                          shadow-[0_0_20px_rgba(255,255,255,0.05)]
-                          transition-all
-                          focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
-                          focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
-                        "
-                      />
-                    </div>
-
-                    {/* LinkedIn */}
-                    <div className="space-y-2">
-                      <p className="text-black font-medium text-sm">LinkedIn URL</p>
-
-                      <div className="relative">
-                        <Linkedin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                        <input
-                          type="text"
-                          placeholder="linkedin.com/in/perfil"
-                          value={resumeData.linkedinUrl || ""}
-                          onChange={(e) => validateLinkedin(e.target.value)}
-                          className="
-                            py-4
-                            pl-9
-                            w-full
-                            rounded-xl
-                            bg-white/10
-                            backdrop-blur-md
-                            border border-white/20
-                            text-white
-                            placeholder:text-gray-300
-                            shadow-[0_0_20px_rgba(255,255,255,0.05)]
-                            transition-all
-                            focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
-                            focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
-                          "
-                        />
-                      </div>
-                    </div>
-
+                  {/* Nome Completo */}
+                  <div className="space-y-2">
+                    <p className="text-black font-medium text-sm">Nome Completo *</p>
+                    <input
+                      type="text"
+                      value={resumeData.fullName}
+                      onChange={(e) =>
+                        setResumeData((prev) => ({ ...prev, fullName: e.target.value }))
+                      }
+                      placeholder="Ex: João Silva"
+                      className="py-4 w-full rounded-xl bg-white/10 backdrop-blur-md border border-black/20 text-black placeholder:text-gray-400 shadow-[0_0_20px_rgba(0,0,0,0.05)] transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
                   </div>
 
+                  {/* ✅ MELHORIA: LinkedIn com validação */}
+                  <div className="space-y-2">
+                    <p className="text-black font-medium text-sm">LinkedIn URL</p>
+                    <div className="relative">
+                      <Linkedin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="linkedin.com/in/perfil"
+                        value={resumeData.linkedinUrl || ""}
+                        onChange={(e) => validateLinkedin(e.target.value)}
+                        onBlur={(e) => validateLinkedin(e.target.value)}
+                        className={`py-4 pl-9 w-full rounded-xl bg-white/10 backdrop-blur-md border ${errors.linkedin ? 'border-red-500' : 'border-black/20'} text-black placeholder:text-gray-400 transition-all focus:ring-2 focus:ring-blue-500`}
+                      />
+                      {errors.linkedin && (
+                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.linkedin}
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* ✅ MELHORIA: Email com validação inline */}
+                    <div className="space-y-2">
+                      <p className="text-black font-medium text-sm">Email Profissional *</p>
+                      <div className="relative">
+                        <input
+                          type="email"
+                          value={resumeData.email}
+                          onChange={(e) => {
+                            setResumeData((prev) => ({ ...prev, email: e.target.value }));
+                            validateEmail(e.target.value);
+                          }}
+                          onBlur={(e) => validateEmail(e.target.value)}
+                          placeholder="joao@exemplo.pt"
+                          className={`py-4 w-full rounded-xl bg-white/10 backdrop-blur-md border ${errors.email ? 'border-red-500' : 'border-black/20'} text-black placeholder:text-gray-400 transition-all focus:ring-2 focus:ring-blue-500`}
+                        />
+                        {resumeData.email && !errors.email && (
+                          <CheckCircle2 className="absolute right-3 top-3 h-5 w-5 text-green-500" />
+                        )}
+                        {errors.email && (
+                          <AlertCircle className="absolute right-3 top-3 h-5 w-5 text-red-500" />
+                        )}
+                      </div>
+                      {errors.email && (
+                        <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                      )}
+                    </div>
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Telefone */}
+                    <div className="space-y-2">
+                      <p className="text-black font-medium text-sm">Telefone / WhatsApp *</p>
+                      <input
+                        ref={phoneRef}
+                        type="tel"
+                        placeholder="9xx xxx xxx"
+                        className={`pl-[90px] py-4 w-full rounded-xl bg-white/10 backdrop-blur-md border ${errors.phone ? 'border-red-500' : 'border-black/20'} text-black placeholder:text-gray-400 transition-all focus:ring-2 focus:ring-blue-500`}
+                      />
+                      {errors.phone && (
+                        <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                      )}
+                    </div>
+                  </div>
 
-                {/* Email */}
-                <div className="space-y-2">
-                  <p className="text-black font-medium text-sm">Email Profissional *</p>
-
-                  <input
-                    type="email"
-                    value={resumeData.email}
-                    onChange={(e) =>
-                      setResumeData((prev) => ({ ...prev, email: e.target.value }))
-                    }
-                    placeholder="joao@exemplo.pt"
-                    className="
-                      py-4
-                      w-full
-                      rounded-xl
-                      bg-white/10
-                      backdrop-blur-md
-                      border border-black/20
-                      text-black
-                      placeholder:text-gray-400
-                      placeholder:text-center
-                      shadow-[0_0_20px_rgba(0,0,0,0.05)]
-                      transition-all
-                      focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
-                      focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
-                    "
-                  />
-                </div>
-
-                {/* Telefone */}
-                <div className="space-y-2">
-                  <p className="text-black font-medium text-sm">Telefone / WhatsApp *</p>
-
-                  <input
-                    ref={phoneRef}
-                    type="tel"
-                    placeholder="9xx xxx xxx"
-                    className="
-                      pl-[90px]
-                      py-4
-                      w-full
-                      rounded-xl
-                      bg-white/10
-                      backdrop-blur-md
-                      border border-black/20
-                      text-black
-                      placeholder:text-gray-400
-                      placeholder:text-center
-                      shadow-[0_0_20px_rgba(0,0,0,0.05)]
-                      transition-all
-                      focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
-                      focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
-                    "
-                  />
-                </div>
-
-              </div>
-
-
-
-
-
-
-
+                  {/* Localização */}
                   <div className="space-y-2">
                     <p className="text-black font-medium text-sm">Localização</p>
-
                     <input
                       value={resumeData.location}
                       onChange={(e) =>
                         setResumeData((prev) => ({ ...prev, location: e.target.value }))
                       }
                       placeholder="Cidade, País"
-                      className="
-                        py-4
-                        w-full
-                        rounded-xl
-                        bg-white/10
-                        backdrop-blur-md
-                        border border-black/20
-                        text-black
-                        placeholder:text-gray-400
-                        placeholder:text-center
-                        shadow-[0_0_20px_rgba(0,0,0,0.05)]
-                        transition-all
-                        focus:ring-2 focus:ring-light-blue-color focus:border-light-blue-color
-                        focus:shadow-[0_0_25px_rgba(0,150,255,0.3)]
-                      "
+                      className="py-4 w-full rounded-xl bg-white/10 backdrop-blur-md border border-black/20 text-black placeholder:text-gray-400 transition-all focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
-
+                  {/* Resumo Pessoal */}
                   <div className="space-y-2">
                     <Label>Resumo Pessoal</Label>
                     <Textarea
                       value={resumeData.summary}
                       onChange={(e) => setResumeData((prev) => ({ ...prev, summary: e.target.value }))}
-                      placeholder="Fale um pouco sobre..."
+                      placeholder="Fale um pouco sobre você, suas competências e objetivos profissionais..."
                       rows={4}
                     />
+                    <p className="text-xs text-gray-500">
+                      {resumeData.summary?.length || 0} caracteres 
+                      {resumeData.summary?.length < 100 && ' · Mínimo recomendado: 100'}
+                    </p>
                   </div>
 
-                  <Button onClick={() => setStep(2)} disabled={!isStep1Complete} className="w-full h-12 text-lg">
-                    Próximo: Experiência
+                  <Button 
+                    onClick={() => setStep(2)} 
+                    disabled={!isStep1Complete} 
+                    className="w-full h-12 text-lg"
+                  >
+                    Próximo: Experiência →
                   </Button>
                 </CardContent>
               </Card>
@@ -580,294 +729,340 @@ useEffect(() => {
             {/* PASSO 2: EXPERIÊNCIA */}
             {step === 2 && (
               <Card className="border-none shadow-xl">
-  <CardHeader>
-    <CardTitle className="text-2xl font-semibold text-black">
-      Experiência Profissional
-    </CardTitle>
-  </CardHeader>
-
-  <CardContent className="space-y-6">
-
-    {resumeData.experiences.map((exp) => (
-      <div
-        key={exp.id}
-        className="p-6 rounded-xl bg-white shadow-[0_0_20px_rgba(0,0,0,0.05)] space-y-6 relative"
-      >
-        {/* Botão de remover */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => removeExperience(exp.id)}
-          className="absolute right-3 top-3 text-red-500 hover:text-red-700"
-        >
-          <Trash2 className="h-5 w-5" />
-        </Button>
-
-        {/* Empresa + Cargo */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <p className="text-black font-medium text-sm">Empresa</p>
-            <input
-              placeholder="Nome da empresa"
-              value={exp.company}
-              onChange={(e) => {
-                const updated = resumeData.experiences.map((x) =>
-                  x.id === exp.id ? { ...x, company: e.target.value } : x
-                );
-                setResumeData((prev) => ({ ...prev, experiences: updated }));
-              }}
-              className="
-                py-4 w-full rounded-xl bg-white/10 backdrop-blur-md
-                border border-black/20 text-black placeholder:text-gray-400
-                placeholder:text-center shadow-[0_0_20px_rgba(0,0,0,0.05)]
-                transition-all focus:ring-2 focus:ring-light-blue-color
-                focus:border-light-blue-color
-              "
-            />
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-black font-medium text-sm">Cargo</p>
-            <input
-              placeholder="Cargo ocupado"
-              value={exp.position}
-              onChange={(e) => {
-                const updated = resumeData.experiences.map((x) =>
-                  x.id === exp.id ? { ...x, position: e.target.value } : x
-                );
-                setResumeData((prev) => ({ ...prev, experiences: updated }));
-              }}
-              className="
-                py-4 w-full rounded-xl bg-white/10 backdrop-blur-md
-                border border-black/20 text-black placeholder:text-gray-400
-                placeholder:text-center shadow-[0_0_20px_rgba(0,0,0,0.05)]
-                transition-all focus:ring-2 focus:ring-light-blue-color
-                focus:border-light-blue-color
-              "
-            />
-          </div>
-        </div>
-
-        {/* Datas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          {/* Início */}
-          <div className="space-y-2">
-            <p className="text-black font-medium text-sm">Início</p>
-
-            <div className="grid grid-cols-2 gap-3">
-              {/* Mês início */}
-              <select
-                value={exp.startMonth}
-                onChange={(e) => {
-                  const updated = resumeData.experiences.map((x) =>
-                    x.id === exp.id ? { ...x, startMonth: e.target.value } : x
-                  );
-                  setResumeData((prev) => ({ ...prev, experiences: updated }));
-                }}
-                className="
-                  py-3 rounded-xl bg-white/10 border border-black/20
-                  text-black shadow-sm focus:ring-2 focus:ring-light-blue-color
-                "
-              >
-                <option value="">Mês</option>
-                {[
-                  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-                  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-                ].map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
-
-              {/* Ano início */}
-              <select
-                value={exp.startYear}
-                onChange={(e) => {
-                  const updated = resumeData.experiences.map((x) =>
-                    x.id === exp.id ? { ...x, startYear: e.target.value } : x
-                  );
-                  setResumeData((prev) => ({ ...prev, experiences: updated }));
-                }}
-                className="
-                  py-3 rounded-xl bg-white/10 border border-black/20
-                  text-black shadow-sm focus:ring-2 focus:ring-light-blue-color
-                "
-              >
-                <option value="">Ano</option>
-                {Array.from({ length: 45 }, (_, i) => 1980 + i).map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Fim */}
-          <div className="space-y-2">
-            <p className="text-black font-medium text-sm">Fim</p>
-
-            {/* Checkbox trabalho atual */}
-            <label className="flex items-center gap-2 text-black text-sm mb-1">
-              <input
-                type="checkbox"
-                checked={exp.current}
-                onChange={(e) => {
-                  const updated = resumeData.experiences.map((x) =>
-                    x.id === exp.id ? { ...x, current: e.target.checked } : x
-                  );
-                  setResumeData((prev) => ({ ...prev, experiences: updated }));
-                }}
-              />
-              Trabalho atual
-            </label>
-
-            <div className="grid grid-cols-2 gap-3">
-              {/* Mês fim */}
-              <select
-                disabled={exp.current}
-                value={exp.endMonth}
-                onChange={(e) => {
-                  const updated = resumeData.experiences.map((x) =>
-                    x.id === exp.id ? { ...x, endMonth: e.target.value } : x
-                  );
-                  setResumeData((prev) => ({ ...prev, experiences: updated }));
-                }}
-                className={`
-                  py-3 rounded-xl bg-white/10 border border-black/20
-                  text-black shadow-sm focus:ring-2 focus:ring-light-blue-color
-                  ${exp.current ? "opacity-40 cursor-not-allowed" : ""}
-                `}
-              >
-                <option value="">Mês</option>
-                {[
-                  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-                  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-                ].map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
-
-              {/* Ano fim */}
-              <select
-                disabled={exp.current}
-                value={exp.endYear}
-                onChange={(e) => {
-                  const updated = resumeData.experiences.map((x) =>
-                    x.id === exp.id ? { ...x, endYear: e.target.value } : x
-                  );
-                  setResumeData((prev) => ({ ...prev, experiences: updated }));
-                }}
-                className={`
-                  py-3 rounded-xl bg-white/10 border border-black/20
-                  text-black shadow-sm focus:ring-2 focus:ring-light-blue-color
-                  ${exp.current ? "opacity-40 cursor-not-allowed" : ""}
-                `}
-              >
-                <option value="">Ano</option>
-                {Array.from({ length: 45 }, (_, i) => 1980 + i).map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Descrição */}
-        <div className="space-y-2">
-          <p className="text-black font-medium text-sm">Responsabilidades</p>
-          <textarea
-            placeholder="Descreva suas responsabilidades..."
-            value={exp.description}
-            onChange={(e) => {
-              const updated = resumeData.experiences.map((x) =>
-                x.id === exp.id ? { ...x, description: e.target.value } : x
-              );
-              setResumeData((prev) => ({ ...prev, experiences: updated }));
-            }}
-            className="
-              w-full h-32 rounded-xl bg-white/10 border border-black/20
-              text-black placeholder:text-gray-400 p-4
-              shadow-[0_0_20px_rgba(0,0,0,0.05)]
-              focus:ring-2 focus:ring-light-blue-color
-            "
-          />
-        </div>
-      </div>
-    ))}
-
-    {/* Botão adicionar */}
-    <Button
-      variant="outline"
-      onClick={addExperience}
-      className="w-full border-dashed py-6 text-black"
-    >
-      <Plus className="mr-2 h-4 w-4" /> Adicionar Experiência
-    </Button>
-
-    {/* Navegação */}
-    <div className="flex gap-4 mt-6">
-      <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
-        Anterior
-      </Button>
-      <Button onClick={() => setStep(3)} className="flex-1">
-        Próximo: Formação
-      </Button>
-    </div>
-  </CardContent>
-</Card>
-
-            )}
-
-            {/* PASSO 3: FORMAÇÃO */}
-            {step === 3 && (
-              <Card className="border-none shadow-xl">
                 <CardHeader>
-                  <CardTitle>Formação Académica</CardTitle>
+                  <CardTitle className="text-2xl font-semibold text-black">
+                    Experiência Profissional
+                  </CardTitle>
                 </CardHeader>
+
                 <CardContent className="space-y-6">
-                  {resumeData.education.map((edu) => (
-                    <div key={edu.id} className="p-4 border rounded-xl space-y-4 bg-white dark:bg-slate-900 relative">
-                      <Button variant="ghost" size="icon" onClick={() => removeEducation(edu.id)} className="absolute right-2 top-2 text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                        <Input
-                          placeholder="Instituição (Ex: Universidade de Lisboa)"
-                          value={edu.school}
-                          onChange={(e) => {
-                            const updated = resumeData.education.map((x) => (x.id === edu.id ? { ...x, school: e.target.value } : x));
-                            setResumeData((prev) => ({ ...prev, education: updated }));
-                          }}
-                        />
-                        <Input
-                          placeholder="Curso (Ex: Administração)"
-                          value={edu.degree}
-                          onChange={(e) => {
-                            const updated = resumeData.education.map((x) => (x.id === edu.id ? { ...x, degree: e.target.value } : x));
-                            setResumeData((prev) => ({ ...prev, education: updated }));
-                          }}
-                        />
+                  {/* ✅ MELHORIA: Empty state quando não tem experiências */}
+                  {resumeData.experiences.length === 0 && (
+                    <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Plus className="w-8 h-8 text-blue-600" />
                       </div>
-                      <Input
-                        placeholder="Ano de Conclusão"
-                        value={edu.graduationYear}
-                        onChange={(e) => {
-                          const updated = resumeData.education.map((x) => (x.id === edu.id ? { ...x, graduationYear: e.target.value } : x));
-                          setResumeData((prev) => ({ ...prev, education: updated }));
-                        }}
-                      />
+                      <p className="text-gray-600 mb-6 text-lg">
+                        Ainda não adicionou nenhuma experiência profissional
+                      </p>
+                      <button
+                        onClick={addExperience}
+                        className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl"
+                      >
+                        Adicionar Primeira Experiência
+                      </button>
+                    </div>
+                  )}
+
+                  {resumeData.experiences.map((exp) => (
+                    <div
+                      key={exp.id}
+                      className="p-6 rounded-xl bg-white shadow-lg border-2 border-gray-100 space-y-6 relative hover:shadow-xl transition-shadow"
+                    >
+                      {/* Botão de remover */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeExperience(exp.id)}
+                        className="absolute right-3 top-3 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+
+                      {/* Empresa + Cargo */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <p className="text-black font-medium text-sm">Empresa</p>
+                          <input
+                            placeholder="Nome da empresa"
+                            value={exp.company}
+                            onChange={(e) => {
+                              const updated = resumeData.experiences.map((x) =>
+                                x.id === exp.id ? { ...x, company: e.target.value } : x
+                              );
+                              setResumeData((prev) => ({ ...prev, experiences: updated }));
+                            }}
+                            className="py-4 w-full rounded-xl bg-white/10 backdrop-blur-md border border-black/20 text-black placeholder:text-gray-400 transition-all focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <p className="text-black font-medium text-sm">Cargo</p>
+                          <input
+                            placeholder="Cargo ocupado"
+                            value={exp.position}
+                            onChange={(e) => {
+                              const updated = resumeData.experiences.map((x) =>
+                                x.id === exp.id ? { ...x, position: e.target.value } : x
+                              );
+                              setResumeData((prev) => ({ ...prev, experiences: updated }));
+                            }}
+                            className="py-4 w-full rounded-xl bg-white/10 backdrop-blur-md border border-black/20 text-black placeholder:text-gray-400 transition-all focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Datas */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <p className="text-black font-medium text-sm">Início</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <select
+                              value={exp.startMonth}
+                              onChange={(e) => {
+                                const updated = resumeData.experiences.map((x) =>
+                                  x.id === exp.id ? { ...x, startMonth: e.target.value } : x
+                                );
+                                setResumeData((prev) => ({ ...prev, experiences: updated }));
+                              }}
+                              className="py-3 rounded-xl bg-white/10 border border-black/20 text-black focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Mês</option>
+                              {["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"].map((m) => (
+                                <option key={m} value={m}>{m}</option>
+                              ))}
+                            </select>
+
+                            <select
+                              value={exp.startYear}
+                              onChange={(e) => {
+                                const updated = resumeData.experiences.map((x) =>
+                                  x.id === exp.id ? { ...x, startYear: e.target.value } : x
+                                );
+                                setResumeData((prev) => ({ ...prev, experiences: updated }));
+                              }}
+                              className="py-3 rounded-xl bg-white/10 border border-black/20 text-black focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Ano</option>
+                              {Array.from({ length: 45 }, (_, i) => 1980 + i).map((year) => (
+                                <option key={year} value={year}>{year}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <p className="text-black font-medium text-sm">Fim</p>
+                            <label className="flex items-center gap-2 text-black text-sm">
+                              <input
+                                type="checkbox"
+                                checked={exp.current}
+                                onChange={(e) => {
+                                  const updated = resumeData.experiences.map((x) =>
+                                    x.id === exp.id ? { ...x, current: e.target.checked } : x
+                                  );
+                                  setResumeData((prev) => ({ ...prev, experiences: updated }));
+                                }}
+                                className="w-4 h-4"
+                              />
+                              Trabalho atual
+                            </label>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <select
+                              disabled={exp.current}
+                              value={exp.endMonth}
+                              onChange={(e) => {
+                                const updated = resumeData.experiences.map((x) =>
+                                  x.id === exp.id ? { ...x, endMonth: e.target.value } : x
+                                );
+                                setResumeData((prev) => ({ ...prev, experiences: updated }));
+                              }}
+                              className={`py-3 rounded-xl bg-white/10 border border-black/20 text-black focus:ring-2 focus:ring-blue-500 ${exp.current ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            >
+                              <option value="">Mês</option>
+                              {["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"].map((m) => (
+                                <option key={m} value={m}>{m}</option>
+                              ))}
+                            </select>
+
+                            <select
+                              disabled={exp.current}
+                              value={exp.endYear}
+                              onChange={(e) => {
+                                const updated = resumeData.experiences.map((x) =>
+                                  x.id === exp.id ? { ...x, endYear: e.target.value } : x
+                                );
+                                setResumeData((prev) => ({ ...prev, experiences: updated }));
+                              }}
+                              className={`py-3 rounded-xl bg-white/10 border border-black/20 text-black focus:ring-2 focus:ring-blue-500 ${exp.current ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            >
+                              <option value="">Ano</option>
+                              {Array.from({ length: 45 }, (_, i) => 1980 + i).map((year) => (
+                                <option key={year} value={year}>{year}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ✅ MELHORIA: Descrição com botão de IA */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-black font-medium text-sm">Responsabilidades</p>
+                          
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => generateAISuggestions(exp.id, exp.position, exp.company)}
+                            disabled={!exp.position || generatingAI === exp.id}
+                            className="text-xs gap-1 border-purple-300 text-purple-700 hover:bg-purple-50"
+                          >
+                            {generatingAI === exp.id ? (
+                              <>Gerando...</>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3" />
+                                Gerar com IA
+                              </>
+                            )}
+                          </Button>
+                        </div>
+
+                        <textarea
+                          placeholder="Descreva suas responsabilidades e conquistas..."
+                          value={exp.description}
+                          onChange={(e) => {
+                            const updated = resumeData.experiences.map((x) =>
+                              x.id === exp.id ? { ...x, description: e.target.value } : x
+                            );
+                            setResumeData((prev) => ({ ...prev, experiences: updated }));
+                          }}
+                          className="w-full h-32 rounded-xl bg-white/10 border border-black/20 text-black placeholder:text-gray-400 p-4 focus:ring-2 focus:ring-blue-500"
+                        />
+                        
+                        {/* ✅ NOVO: Character counter */}
+                        <p className="text-xs text-gray-500">
+                          {exp.description?.length || 0} caracteres
+                          {exp.description && exp.description.length < 50 && ' · Mínimo recomendado: 50'}
+                        </p>
+                      </div>
                     </div>
                   ))}
 
-                  <Button variant="outline" onClick={addEducation} className="w-full border-dashed py-6">
-                    <Plus className="mr-2 h-4 w-4" /> Adicionar Formação
-                  </Button>
+                  {/* ✅ MELHORIA: Botão adicionar mais chamativo */}
+                  {resumeData.experiences.length > 0 && (
+                    <button
+                      onClick={addExperience}
+                      className="w-full py-6 rounded-xl border-2 border-dashed border-blue-400 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold transition-all hover:border-solid hover:shadow-lg flex items-center justify-center gap-3"
+                    >
+                      <Plus className="w-5 h-5" />
+                      <span>Adicionar Nova Experiência</span>
+                    </button>
+                  )}
 
+                  {/* Navegação */}
+                  <div className="flex gap-4 mt-6">
+                    <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+                      ← Anterior
+                    </Button>
+                    <Button onClick={() => setStep(3)} className="flex-1">
+                      Próximo: Formação →
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* PASSO 3: FORMAÇÃO - ✅ BUG CORRIGIDO */}
+            {step === 3 && (
+              <Card className="border-none shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-semibold tracking-tight">
+                    Formação Académica
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="space-y-10">
+                  {resumeData.education.map((edu) => (
+                    <div
+                      key={edu.id}
+                      className="rounded-2xl border-2 border-gray-100 bg-white shadow-lg p-8 space-y-6 relative hover:shadow-xl transition-shadow"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeEducation(edu.id)}
+                        className="absolute right-4 top-4 text-red-500 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+
+                      {/* ✅ CORRIGIDO: Instituição usa edu.school */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                          Instituição
+                        </h4>
+                        <input
+                          placeholder="Ex: Universidade de Lisboa"
+                          value={edu.school}
+                          onChange={(e) => {
+                            const updated = resumeData.education.map((x) =>
+                              x.id === edu.id ? { ...x, school: e.target.value } : x
+                            );
+                            setResumeData((prev) => ({ ...prev, education: updated }));
+                          }}
+                          className="py-4 w-full rounded-xl bg-white/10 backdrop-blur-md border border-black/20 text-black placeholder:text-gray-400 text-center transition-all focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* ✅ CORRIGIDO: Curso usa edu.degree */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                          Curso
+                        </h4>
+                        <input
+                          placeholder="Ex: Engenharia Informática"
+                          value={edu.degree}
+                          onChange={(e) => {
+                            const updated = resumeData.education.map((x) =>
+                              x.id === edu.id ? { ...x, degree: e.target.value } : x
+                            );
+                            setResumeData((prev) => ({ ...prev, education: updated }));
+                          }}
+                          className="py-4 w-full rounded-xl bg-white/10 backdrop-blur-md border border-black/20 text-black placeholder:text-gray-400 text-center transition-all focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* ✅ CORRIGIDO: Ano usa edu.graduationYear */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                          Ano de Conclusão
+                        </h4>
+                        <input
+                          placeholder="Ex: 2025"
+                          value={edu.graduationYear}
+                          onChange={(e) => {
+                            const updated = resumeData.education.map((x) =>
+                              x.id === edu.id ? { ...x, graduationYear: e.target.value } : x
+                            );
+                            setResumeData((prev) => ({ ...prev, education: updated }));
+                          }}
+                          className="py-4 w-full rounded-xl bg-white/10 backdrop-blur-md border border-black/20 text-black placeholder:text-gray-400 text-center transition-all focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Botão adicionar */}
+                  <button
+                    onClick={addEducation}
+                    className="w-full py-6 rounded-xl border-2 border-dashed border-purple-400 bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold transition-all hover:border-solid hover:shadow-lg flex items-center justify-center gap-3"
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span>Adicionar Formação</span>
+                  </button>
+
+                  {/* Navegação */}
                   <div className="flex gap-4 mt-6">
                     <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
-                      Anterior
+                      ← Anterior
                     </Button>
                     <Button onClick={() => setStep(4)} className="flex-1">
-                      Próximo: Competências
+                      Próximo: Competências →
                     </Button>
                   </div>
                 </CardContent>
@@ -876,118 +1071,241 @@ useEffect(() => {
 
             {/* PASSO 4: COMPETÊNCIAS, IDIOMAS E FINALIZAÇÃO */}
             {step === 4 && (
-              <Card className="border-none shadow-xl">
-                <CardHeader>
-                  <CardTitle>Competências, Idiomas e Finalização</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Ex: React, Inglês Fluente, Gestão..."
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addSkill()}
-                    />
-                    <Button onClick={addSkill}>Adicionar</Button>
-                  </div>
+  <Card className="border-none shadow-xl">
+    <CardHeader>
+      <CardTitle>Competências, Idiomas e Finalização</CardTitle>
+    </CardHeader>
 
-                  <div className="flex flex-wrap gap-2">
-                    {resumeData.skills.map((skill) => (
-                      <Badge key={skill} variant="secondary" className="pl-3 pr-1 py-1 gap-2 text-sm">
-                        {skill}
-                        <Trash2 className="w-3 h-3 cursor-pointer hover:text-destructive ml-2" onClick={() => removeSkill(skill)} />
-                      </Badge>
-                    ))}
-                  </div>
+    {/* 🔥 Compactado: antes era space-y-8 */}
+    <CardContent className="space-y-4">
 
-                  {/* Idiomas */}
-                  <div className="pt-4 border-t">
-                    <Label>Idiomas</Label>
-                    <div className="flex gap-2 mt-2">
-                      <Input
-                        placeholder="Ex: Português, Inglês, Espanhol..."
-                        value={newLanguageName}
-                        onChange={(e) => setNewLanguageName(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && addLanguage()}
-                      />
-                      <select
-                        value={newLanguageLevel}
-                        onChange={(e) => setNewLanguageLevel(e.target.value as LanguageLevel)}
-                        className="border rounded px-3"
-                      >
-                        <option value="Básico">Básico</option>
-                        <option value="Intermediário">Intermediário</option>
-                        <option value="Avançado">Avançado</option>
-                        <option value="Fluente">Fluente</option>
-                        <option value="Nativo">Nativo</option>
-                      </select>
-                      <Button onClick={addLanguage}>Adicionar</Button>
-                    </div>
+      {/* ============================
+          COMPETÊNCIAS
+      ============================ */}
+      <div className="space-y-3">
 
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {resumeData.languages.map((lang) => (
-                        <Badge key={lang.id} variant="secondary" className="pl-3 pr-1 py-1 gap-2 text-sm flex items-center">
-                          <span className="mr-2">{lang.name}</span>
-                          <span className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{lang.level}</span>
-                          <Trash2 className="w-3 h-3 ml-2 cursor-pointer hover:text-destructive" onClick={() => removeLanguage(lang.id)} />
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
+        {/* 🔥 Responsivo: input em cima no mobile, lado a lado no PC */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="text"
+            placeholder="Ex: React, Inglês Fluente, Gestão..."
+            value={newSkill}
+            onChange={(e) => setNewSkill(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
+            className="
+              flex-1
+              py-4 min-h-[48px] w-full
+              rounded-xl bg-white/10 backdrop-blur-md 
+              border border-black/20 text-black placeholder:text-gray-400 
+              shadow-[0_0_20px_rgba(0,0,0,0.05)]
+              transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+            "
+          />
 
-                  {/* Objetivo / Carta curta (WYSIWYG-like) */}
-                  <div className="pt-4 border-t">
-                    <Label>Objetivo / Carta curta</Label>
-                    <div className="mt-2">
-                      <div className="mb-2 text-sm text-slate-500">
-                        Isso aparece no topo do seu currículo. Impressione os empregadores com uma introdução que resume seus pontos fortes.
-                      </div>
-                      <div
-                        contentEditable
-                        suppressContentEditableWarning
-                        onInput={handleObjectiveInput}
-                        className="min-h-[120px] p-3 border rounded bg-white dark:bg-slate-900"
-                        aria-label="Objetivo do currículo"
-                      >
-                        {resumeData.objective}
-                      </div>
-                    </div>
-                  </div>
+          <Button 
+            onClick={addSkill} 
+            className="h-12 w-full sm:w-auto px-4 text-sm sm:text-base"
+          >
+            Adicionar
+          </Button>
+        </div>
 
-                  <div className="flex flex-col gap-4 pt-6 border-t mt-6">
-                    <div className="flex gap-4">
-                      <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
-                        Anterior
-                      </Button>
-                      <Button type="button" onClick={() => router.push("/checkout")} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold h-12">
-                        Obter o meu currículo agora
-                      </Button>
-                    </div>
+        {/* Sugestões */}
+        {skillSuggestions.length > 0 && (
+          <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <p className="text-sm font-medium text-gray-700 mb-2">
+              💡 Sugestões baseadas no cargo "{resumeData.experiences[0]?.position}":
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {skillSuggestions
+                .filter(s => !resumeData.skills.includes(s))
+                .map((skill) => (
+                  <button
+                    key={skill}
+                    onClick={() => {
+                      setResumeData(prev => ({ 
+                        ...prev, 
+                        skills: [...prev.skills, skill] 
+                      }));
+                      toast.success(`"${skill}" adicionada`);
+                    }}
+                    className="
+                      px-3 py-1 bg-white border border-blue-300 rounded-full 
+                      text-sm hover:bg-blue-100 transition-colors
+                    "
+                  >
+                    + {skill}
+                  </button>
+                ))}
+            </div>
+          </div>
+        )}
 
-                    <div className="flex flex-col gap-2">
-                      <Button type="button" variant="outline" disabled={!resumeData.fullName || loadingLetter} onClick={handleGenerateLetter}>
-                        {loadingLetter ? "A gerar carta de apresentação..." : "Gerar Carta de Apresentação"}
-                      </Button>
+        {/* Lista de skills */}
+        <div className="flex flex-wrap gap-2">
+          {resumeData.skills.map((skill) => (
+            <Badge 
+              key={skill} 
+              variant="secondary" 
+              className="pl-3 pr-1 py-1 gap-2 text-sm"
+            >
+              {skill}
+              <Trash2 
+                className="w-3 h-3 cursor-pointer hover:text-destructive ml-2" 
+                onClick={() => removeSkill(skill)} 
+              />
+            </Badge>
+          ))}
+        </div>
+      </div>
 
-                      {!isPremium && (
-                        <p className="text-xs text-red-500">
-                          O download do currículo em PDF será liberado após a conclusão do pagamento no checkout.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+
+      {/* ============================
+          IDIOMAS
+      ============================ */}
+      <div className="pt-4 border-t space-y-3">
+        <Label>Idiomas</Label>
+
+        {/* 🔥 Responsivo */}
+        <div className="flex flex-col sm:flex-row gap-3">
+
+          <input
+            type="text"
+            placeholder="Ex: Português, Inglês, Espanhol..."
+            value={newLanguageName}
+            onChange={(e) => setNewLanguageName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addLanguage())}
+            className="
+              flex-1
+              py-4 min-h-[48px] w-full
+              rounded-xl bg-white/10 backdrop-blur-md 
+              border border-black/20 text-black placeholder:text-gray-400 
+              shadow-[0_0_20px_rgba(0,0,0,0.05)]
+              transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+            "
+          />
+
+          <select
+            value={newLanguageLevel}
+            onChange={(e) => setNewLanguageLevel(e.target.value as LanguageLevel)}
+            className="
+              py-4 min-h-[48px]
+              rounded-xl bg-white/10 backdrop-blur-md 
+              border border-black/20 text-black shadow 
+              focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+            "
+          >
+            <option value="Básico">Básico</option>
+            <option value="Intermediário">Intermediário</option>
+            <option value="Avançado">Avançado</option>
+            <option value="Fluente">Fluente</option>
+            <option value="Nativo">Nativo</option>
+          </select>
+
+          <Button 
+            onClick={addLanguage} 
+            className="h-12 w-full sm:w-auto px-4 text-sm sm:text-base"
+          >
+            Adicionar
+          </Button>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mt-2">
+          {resumeData.languages.map((lang) => (
+            <Badge 
+              key={lang.id} 
+              variant="secondary" 
+              className="pl-3 pr-1 py-1 gap-2 text-sm flex items-center"
+            >
+              <span className="mr-2">{lang.name}</span>
+              <span className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
+                {lang.level}
+              </span>
+              <Trash2 
+                  className="w-3 h-3 ml-2 cursor-pointer hover:text-destructive" 
+                  onClick={() => removeLanguage(lang.id)} 
+                />
+
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+
+      {/* ============================
+          OBJETIVO / CARTA CURTA
+      ============================ */}
+      <div className="pt-4 border-t space-y-2">
+        <Label>Objetivo / Carta curta</Label>
+
+        <p className="text-sm text-slate-500">
+          Isso aparece no topo do seu currículo.
+        </p>
+
+        <div
+          contentEditable
+          suppressContentEditableWarning
+          onInput={handleObjectiveInput}
+          className="
+            min-h-[120px] p-4 rounded-xl bg-white/10 backdrop-blur-md 
+            border border-black/20 text-black shadow-[0_0_20px_rgba(0,0,0,0.05)]
+            focus:ring-2 focus:ring-blue-500 outline-none
+          "
+        >
+          {resumeData.objective}
+        </div>
+      </div>
+
+
+      {/* ============================
+          BOTÕES FINAIS
+      ============================ */}
+      <div className="flex flex-col gap-3 pt-4 border-t">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button variant="outline" onClick={() => setStep(3)} className="flex-1 h-12">
+            ← Anterior
+          </Button>
+
+          <Button 
+            type="button" 
+            onClick={() => router.push("/checkout")} 
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold h-12"
+          >
+            Obter o meu currículo agora
+          </Button>
+        </div>
+
+        <Button 
+          type="button" 
+          variant="outline" 
+          disabled={!resumeData.fullName || loadingLetter} 
+          onClick={handleGenerateLetter}
+          className="h-12"
+        >
+          {loadingLetter ? "A gerar carta de apresentação..." : "Gerar Carta de Apresentação"}
+        </Button>
+
+        {!isPremium && (
+          <p className="text-xs text-red-500 text-center">
+            O download do currículo em PDF será liberado após o pagamento.
+          </p>
+        )}
+      </div>
+
+    </CardContent>
+  </Card>
+)}
+
+
           </div>
 
-          {/* Coluna do Preview */}
+          {/* ✅ MELHORIA: Preview com indicador de atualização */}
           <div className="lg:col-span-5">
             <div className="sticky top-10">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-lg flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  Visualização em Tempo Real
+                  <span className={`w-2 h-2 rounded-full animate-pulse ${isUpdating ? 'bg-yellow-500' : 'bg-green-500'}`} />
+                  {isUpdating ? 'Atualizando...' : 'Visualização em Tempo Real'}
                 </h3>
               </div>
 
@@ -995,8 +1313,8 @@ useEffect(() => {
                 {/* Top Header do Currículo */}
                 <div className="bg-slate-900 p-8 text-white flex gap-6 items-center">
                   <div className="w-24 h-24 rounded-lg bg-slate-700 overflow-hidden flex-shrink-0 border-2 border-slate-600">
-                    {resumeData.photoUrl ? (
-                      <img src={resumeData.photoUrl} className="w-full h-full object-cover" alt="Foto" />
+                    {previewData.photoUrl ? (
+                      <img src={previewData.photoUrl} className="w-full h-full object-cover" alt="Foto" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <User className="w-8 h-8 opacity-20" />
@@ -1004,25 +1322,25 @@ useEffect(() => {
                     )}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold uppercase tracking-wide">{resumeData.fullName || "SEU NOME"}</h2>
-                    <p className="text-blue-400 font-medium">{resumeData.experiences[0]?.position || "Cargo Pretendido"}</p>
+                    <h2 className="text-2xl font-bold uppercase tracking-wide">{previewData.fullName || "SEU NOME"}</h2>
+                    <p className="text-blue-400 font-medium">{previewData.experiences[0]?.position || "Cargo Pretendido"}</p>
                     <div className="mt-2 flex flex-wrap gap-3 text-[10px] opacity-80">
-                      {resumeData.location && (
+                      {previewData.location && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" /> {resumeData.location}
+                          <MapPin className="w-3 h-3" /> {previewData.location}
                         </span>
                       )}
-                      {resumeData.email && (
+                      {previewData.email && (
                         <span className="flex items-center gap-1">
-                          <Mail className="w-3 h-3" /> {resumeData.email}
+                          <Mail className="w-3 h-3" /> {previewData.email}
                         </span>
                       )}
-                      {resumeData.phone && (
+                      {previewData.phone && (
                         <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3" /> {resumeData.phone}
+                          <Phone className="w-3 h-3" /> {previewData.phone}
                         </span>
                       )}
-                      {resumeData.linkedinUrl && (
+                      {previewData.linkedinUrl && (
                         <span className="flex items-center gap-1">
                           <Linkedin className="w-3 h-3" /> LinkedIn
                         </span>
@@ -1033,36 +1351,58 @@ useEffect(() => {
 
                 <div className="p-8 space-y-6">
                   {/* Objetivo */}
-                  {resumeData.objective && (
+                  {previewData.objective && (
                     <section>
                       <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-2">Objetivo</h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{resumeData.objective}</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{previewData.objective}</p>
                     </section>
                   )}
 
                   {/* Resumo */}
-                  {resumeData.summary && (
+                  {previewData.summary && (
                     <section>
                       <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-2">Resumo</h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{resumeData.summary}</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{previewData.summary}</p>
                     </section>
                   )}
 
                   {/* Experiência */}
-                  {resumeData.experiences.length > 0 && (
+                  {previewData.experiences.length > 0 && (
                     <section>
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">Experiência Profissional</h4>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">
+                        Experiência Profissional
+                      </h4>
                       <div className="space-y-4">
-                        {resumeData.experiences.map((exp) => (
+                        {previewData.experiences.map((exp) => (
                           <div key={exp.id}>
                             <div className="flex justify-between items-start">
-                              <p className="font-bold text-slate-800 dark:text-slate-100">{exp.position}</p>
+                              <p className="font-bold text-slate-800 dark:text-slate-100">
+                                {exp.position || "Cargo"}
+                              </p>
                               <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500">
-                                {exp.startDate} - {exp.endDate || "Atual"}
+                                {exp.startMonth}/{exp.startYear} – {exp.current ? "Atual" : `${exp.endMonth}/${exp.endYear}`}
                               </span>
                             </div>
                             <p className="text-xs text-blue-600 font-medium">{exp.company}</p>
-                            <p className="text-xs mt-1 text-slate-500 line-clamp-2">{exp.description}</p>
+                            <p className="text-xs mt-1 text-slate-500 line-clamp-3">
+                              {exp.description}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Educação */}
+                  {previewData.education.length > 0 && (
+                    <section>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">Formação</h4>
+                      <div className="space-y-3">
+                        {previewData.education.map((edu) => (
+                          <div key={edu.id}>
+                            <p className="font-semibold text-sm">{edu.degree}</p>
+                            <p className="text-xs text-slate-600">{edu.school}</p>
+                            <p className="text-xs text-slate-500">{edu.graduationYear}</p>
                           </div>
                         ))}
                       </div>
@@ -1070,11 +1410,11 @@ useEffect(() => {
                   )}
 
                   {/* Skills */}
-                  {resumeData.skills.length > 0 && (
+                  {previewData.skills.length > 0 && (
                     <section>
                       <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">Competências</h4>
                       <div className="flex flex-wrap gap-2">
-                        {resumeData.skills.map((skill) => (
+                        {previewData.skills.map((skill) => (
                           <Badge key={skill} variant="secondary" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-normal">
                             {skill}
                           </Badge>
@@ -1084,11 +1424,11 @@ useEffect(() => {
                   )}
 
                   {/* Idiomas */}
-                  {resumeData.languages.length > 0 && (
+                  {previewData.languages.length > 0 && (
                     <section>
                       <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">Idiomas</h4>
                       <div className="flex flex-wrap gap-3">
-                        {resumeData.languages.map((lang) => (
+                        {previewData.languages.map((lang) => (
                           <div key={lang.id} className="text-sm">
                             <div className="font-medium">{lang.name}</div>
                             <div className="text-xs text-slate-500">{lang.level}</div>
@@ -1098,7 +1438,7 @@ useEffect(() => {
                     </section>
                   )}
 
-                  {/* Carta de Apresentação (preview simples) */}
+                  {/* Carta de Apresentação */}
                   {letter && (
                     <section>
                       <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1 mb-3">Carta de Apresentação (IA)</h4>
@@ -1116,7 +1456,6 @@ useEffect(() => {
                     <Button disabled className="bg-gray-300 text-gray-600 cursor-not-allowed h-12">
                       Baixar Currículo (Premium)
                     </Button>
-
                     <Button onClick={() => router.push("/checkout")} className="bg-blue-600 hover:bg-blue-700 text-white h-12">
                       Fazer Upgrade para Desbloquear
                     </Button>
