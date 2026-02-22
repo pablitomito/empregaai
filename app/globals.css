@@ -1,297 +1,191 @@
 /* emprega-ai-frontend/app/globals.css */
-/* IDENTIDADE VISUAL - EMPREGA.AI */
-/* Paleta: Royal Blue (#2563EB) → Deep Purple (#7C3AED) + Emerald Green (#10B981) */
+/* IDENTIDADE VISUAL PREMIUM - EMPREGA.AI */
+/* Estilo: SaaS IA Enterprise | Azul Premium + Ciano */
 
-/* Importar fontes do Google Fonts */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================ */
-/* VARIÁVEIS DE COR - CONFORME DOCUMENTO */
+/* DESIGN TOKENS — SISTEMA VISUAL */
 /* ============================================ */
 :root {
-  /* Primária: Royal Blue → Deep Purple */
-  --color-primary-blue: #2563EB;
-  --color-primary-purple: #7C3AED;
-  
-  /* Secundária: Emerald Green (CTA) */
-  --color-action-green: #10B981;
-  --color-action-green-dark: #059669;
-  
-  /* Fundos */
-  --color-bg-white: #FFFFFF;
-  --color-bg-off-white: #F8FAFC;
-  
-  /* Gradientes */
-  --gradient-primary: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
-  --gradient-action: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  /* Core Brand */
+  --primary: #2563eb;
+  --primary-dark: #1e40af;
+  --secondary: #06b6d4;
+
+  /* Status */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  /* Background */
+  --bg-main: #020617;
+  --bg-card: #020617;
+  --bg-soft: #020617;
+
+  /* Borders */
+  --border-soft: rgba(255,255,255,0.08);
+
+  /* Text */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+
+  /* Gradients */
+  --gradient-main: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
 }
 
 /* ============================================ */
-/* RESET E BASE */
+/* BASE RESET */
 /* ============================================ */
 * {
   box-sizing: border-box;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
 html {
   scroll-behavior: smooth;
+  background: var(--bg-main);
 }
 
 body {
-  /* Corpo de texto: Inter (conforme documento) */
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: var(--color-bg-white);
-  color: #1a1a1a;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Títulos: Poppins Bold/Extra Bold (conforme documento) */
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5 {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 /* ============================================ */
-/* SCROLLBAR CUSTOMIZADA */
+/* SCROLLBAR PREMIUM */
 /* ============================================ */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #020617;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #2563EB, #7C3AED);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #1e40af;
+  background: linear-gradient(180deg, #2563eb, #06b6d4);
+  border-radius: 8px;
 }
 
 /* ============================================ */
-/* ANIMAÇÕES CUSTOMIZADAS */
+/* ANIMAÇÕES SUAVES */
 /* ============================================ */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+@keyframes glow {
+  0% { box-shadow: 0 0 0 rgba(37,99,235,0); }
+  50% { box-shadow: 0 0 40px rgba(37,99,235,.45); }
+  100% { box-shadow: 0 0 0 rgba(37,99,235,0); }
 }
 
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.animate-fade-up {
+  animation: fade-up .7s ease forwards;
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(16, 185, 129, 0.8), 0 0 60px rgba(16, 185, 129, 0.6);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.8s ease-out;
-}
-
-.animate-slideInLeft {
-  animation: slideInLeft 0.8s ease-out;
-}
-
-.animate-slideInRight {
-  animation: slideInRight 0.8s ease-out;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.animate-glow {
+  animation: glow 2.5s ease-in-out infinite;
 }
 
 /* ============================================ */
-/* UTILITÁRIOS CUSTOMIZADOS */
+/* CONTAINERS */
 /* ============================================ */
-
-/* Container responsivo */
 .container {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-}
-
-/* Gradientes de texto */
-.text-gradient-primary {
-  @apply text-transparent bg-clip-text bg-gradient-to-r from-[#2563EB] to-[#7C3AED];
-}
-
-.text-gradient-action {
-  @apply text-transparent bg-clip-text bg-gradient-to-r from-[#10B981] to-[#059669];
-}
-
-/* Botão CTA principal (Emerald Green) */
-.btn-cta {
-  @apply bg-[#10B981] hover:bg-[#059669] text-white font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 hover:-translate-y-1;
-}
-
-/* Botão secundário (Gradiente Primary) */
-.btn-secondary {
-  @apply bg-gradient-to-r from-[#2563EB] to-[#7C3AED] hover:from-[#1e40af] hover:to-[#6d28d9] text-white font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all;
-}
-
-/* Card com hover effect */
-.card-hover {
-  @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-2;
-}
-
-/* Backdrop blur para glassmorphism */
-.backdrop-card {
-  @apply bg-white/10 backdrop-blur-lg border border-white/20;
-}
-
-/* Sombras customizadas */
-.shadow-emerald {
-  box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.5);
-}
-
-.shadow-blue {
-  box-shadow: 0 20px 40px -12px rgba(37, 99, 235, 0.5);
-}
-
-.shadow-purple {
-  box-shadow: 0 20px 40px -12px rgba(124, 58, 237, 0.5);
+  @apply max-w-7xl mx-auto px-6 lg:px-8;
 }
 
 /* ============================================ */
-/* ACESSIBILIDADE */
+/* COMPONENTES REUTILIZÁVEIS */
 /* ============================================ */
 
-/* Focus visible para navegação por teclado */
-*:focus-visible {
-  @apply outline-2 outline-offset-2 outline-blue-600 rounded;
+/* Texto gradiente principal */
+.text-gradient {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400;
 }
 
-/* Link hover */
-a {
-  @apply transition-colors duration-200;
+/* Botão principal */
+.btn-primary {
+  @apply bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold px-7 py-3 rounded-xl shadow-lg transition-all hover:scale-[1.03] hover:shadow-xl;
 }
 
-/* Botão disabled */
-button:disabled {
-  @apply opacity-50 cursor-not-allowed;
+/* Botão ghost */
+.btn-ghost {
+  @apply border border-white/10 bg-white/5 hover:bg-white/10 text-white font-medium px-7 py-3 rounded-xl transition;
+}
+
+/* Cards premium */
+.card {
+  @apply bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-6 transition-all hover:shadow-xl hover:-translate-y-1;
+}
+
+/* Glass UI */
+.glass {
+  @apply bg-white/5 border border-white/10 backdrop-blur-xl;
 }
 
 /* ============================================ */
-/* RESPONSIVIDADE */
+/* STATUS */
 /* ============================================ */
-
-/* Ajustes para mobile */
-@media (max-width: 768px) {
-  h1 {
-    font-size: 2rem;
-    line-height: 1.2;
-  }
-  
-  h2 {
-    font-size: 1.75rem;
-  }
-  
-  h3 {
-    font-size: 1.5rem;
-  }
+.status-success {
+  color: var(--success);
 }
 
-/* Ajustes para desktop */
-@media (min-width: 1024px) {
-  h1 {
-    font-size: 3.75rem;
-    line-height: 1.1;
-  }
-  
-  h2 {
-    font-size: 3rem;
-  }
+.status-warning {
+  color: var(--warning);
+}
+
+.status-danger {
+  color: var(--danger);
+}
+
+/* ============================================ */
+/* GRID DECORATIVO */
+/* ============================================ */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
 /* ============================================ */
 /* LOADING STATES */
 /* ============================================ */
-
 .spinner {
-  @apply animate-spin rounded-full border-4 border-gray-200 border-t-blue-600;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
+  border: 4px solid rgba(255,255,255,0.1);
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.skeleton {
-  @apply bg-gray-200 animate-pulse rounded;
-}
-
-/* ============================================ */
-/* PADRÃO DE GRID (Background decorativo) */
-/* ============================================ */
-
-.bg-grid-pattern {
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 30px 30px;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ============================================ */
-/* IMPRESSÃO */
+/* PDF E PRINT */
 /* ============================================ */
-
 @media print {
-  .no-print {
-    display: none !important;
-  }
-  
   body {
     background: white;
     color: black;
@@ -299,117 +193,26 @@ button:disabled {
 }
 
 /* ============================================ */
-/* CUSTOMIZAÇÕES ESPECÍFICAS */
+/* INPUT UX */
 /* ============================================ */
-
-/* Remover setas de input number */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
-/* Smooth scroll para âncoras */
-html {
-  scroll-padding-top: 80px;
-}
-
-/* Seleção de texto customizada */
-::selection {
-  background-color: rgba(16, 185, 129, 0.3);
-  color: #1a1a1a;
-}
-
-::-moz-selection {
-  background-color: rgba(16, 185, 129, 0.3);
-  color: #1a1a1a;
-}
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-.animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee 30s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused; /* Para o carrossel quando o usuário passa o rato */
-}
-/* No seu CSS ou dentro de uma tag <style> no template */
-.antialiased-pdf {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-@media print {
-  @page {
-    size: A4;
-    margin: 0;
-  }
-  body {
-    margin: 0;
-    -webkit-print-color-adjust: exact;
-  }
-}
-
-/* Container do dropdown */
-.iti__country-list {
-  background: rgba(20, 20, 20, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+input, textarea, select {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
   border-radius: 12px;
-  padding: 8px 0;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  padding: 12px 14px;
+  color: white;
 }
 
-/* Cada item */
-.iti__country {
-  padding: 10px 14px;
-  transition: background 0.15s ease, transform 0.15s ease;
-  border-radius: 8px;
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37,99,235,.25);
 }
 
-/* Hover premium */
-.iti__country:hover {
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateX(4px);
-}
-
-/* Nome do país */
-.iti__country-name {
-  color: #fff;
-  font-weight: 500;
-}
-
-/* DDI */
-.iti__dial-code {
-  color: #8ecbff;
-  font-weight: 600;
-}
-
-/* Bandeira */
-.iti__flag {
-  border-radius: 4px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
-}
-/* Área do DDI + bandeira */
-.iti--allow-dropdown .iti__flag-container {
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px);
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px 0 0 12px;
-  padding-left: 12px;
-  padding-right: 12px;
-}
-
-/* Ícone da setinha */
-.iti__arrow {
-  border-top-color: #8ecbff !important;
+/* ============================================ */
+/* SELEÇÃO DE TEXTO */
+/* ============================================ */
+::selection {
+  background: rgba(37,99,235,.35);
+  color: white;
 }

@@ -78,7 +78,7 @@ export default function LandingPage() {
       {/* ============================================ */}
       {/* 1. HERO SECTION - A PRIMEIRA IMPRESSÃO */}
       {/* ============================================ */}
-      <section className="relative bg-gradient-to-br from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white overflow-hidden">
+      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 text-white">
         {/* Padrão de fundo decorativo */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-[url('/grid.svg')] bg-repeat"></div>
@@ -100,7 +100,7 @@ export default function LandingPage() {
                   <div className="bg-emerald-500/20 border border-emerald-400/40 rounded-full px-5 py-2.5 text-sm font-semibold text-emerald-200 backdrop-blur-sm">
                     <span className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4" />
-                      Inteligência Artificial + Currículos Premium
+                      Inteligência Artificial + Empregos Automatizados
                     </span>
                   </div>
                 </div>
@@ -108,7 +108,7 @@ export default function LandingPage() {
                 {/* H1 - Título Principal */}
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
                   O Seu Próximo Emprego em Portugal Encontrado Por{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-emerald-400 to-emerald-500">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-300">
                     Inteligência Artificial
                   </span>
                 </h1>
@@ -124,9 +124,9 @@ export default function LandingPage() {
                 <div className="space-y-4">
                   <Link 
                     href="onboarding/cadastro"
-                    className="inline-flex items-center gap-3 bg-[#10B981] hover:bg-[#059669] text-white px-10 py-5 rounded-xl text-lg font-bold shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:scale-105 hover:-translate-y-1"
+                    className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-cyan-500/30 transition-all transform hover:scale-105"
                   >
-                    Encontrar Minha Vaga Agora
+                    Começar Meu Match Profissional
                     <ArrowRight className="w-6 h-6" />
                   </Link>
                   
@@ -228,8 +228,8 @@ export default function LandingPage() {
             </h2>
             
             {/* Card do problema */}
-            <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-100">
-              <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-8">
+            <div className="bg-slate-900 rounded-3xl shadow-xl p-8 md:p-12 border border-slate-800">
+              <p className="text-lg md:text-xl text-slate-300 leading-relaxed mb-8">
                 Cansado de enviar dezenas de currículos e ser ignorado? O problema não é você, 
                 é o "jogo" dos recrutadores. Empresas recebem{' '}
                 <strong className="text-blue-600 font-bold">milhares de candidaturas iguais</strong>. 
@@ -288,7 +288,7 @@ export default function LandingPage() {
                   </div>
                   
                   {/* Ícone */}
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#2563EB] to-[#4F46E5] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
                     <Target className="w-10 h-10 text-white" />
                   </div>
                   
@@ -306,11 +306,11 @@ export default function LandingPage() {
               <div className="relative group">
                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl p-8 text-center hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-purple-300">
                   
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-[#7C3AED] to-[#9333EA] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-[#2563EB] to-[#4F46E5] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
                     2
                   </div>
                   
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#7C3AED] to-[#9333EA] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
                     <Sparkles className="w-10 h-10 text-white" />
                   </div>
                   
@@ -327,11 +327,11 @@ export default function LandingPage() {
               <div className="relative group">
                 <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-3xl p-8 text-center hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-emerald-300">
                   
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-[#10B981] to-[#059669] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-[#2563EB] to-[#4F46E5] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
                     3
                   </div>
                   
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
                     <Mail className="w-10 h-10 text-white" />
                   </div>
                   
@@ -348,11 +348,11 @@ export default function LandingPage() {
               <div className="relative group">
                 <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-3xl p-8 text-center hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-orange-300">
                   
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-[#2563EB] to-[#4F46E5] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
                     4
                   </div>
                   
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
                     <Send className="w-10 h-10 text-white" />
                   </div>
                   
@@ -443,7 +443,7 @@ export default function LandingPage() {
             
             {/* Benefício 1 - Taxa de Sucesso */}
             <div className="group">
-              <div className="bg-gradient-to-br from-[#2563EB] to-[#4F46E5] rounded-3xl p-10 text-white shadow-2xl hover:shadow-blue-500/50 transition-all transform hover:-translate-y-2">
+              <div className="bg-gradient-to-br from-blue-600 to-cyan-500 rounded-3xl p-10 text-white shadow-2xl hover:shadow-blue-500/50 transition-all transform hover:-translate-y-2">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
                     <TrendingUp className="w-8 h-8 text-white" />
@@ -459,7 +459,7 @@ export default function LandingPage() {
 
             {/* Benefício 2 - Rapidez */}
             <div className="group">
-              <div className="bg-gradient-to-br from-[#10B981] to-[#059669] rounded-3xl p-10 text-white shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:-translate-y-2">
+              <div className="bg-gradient-to-br from-cyan-600 to-sky-500 rounded-3xl p-10 text-white shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:-translate-y-2">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
                     <Zap className="w-8 h-8 text-white" />
@@ -475,7 +475,7 @@ export default function LandingPage() {
 
             {/* Benefício 3 - Design Premium */}
             <div className="group">
-              <div className="bg-gradient-to-br from-[#7C3AED] to-[#9333EA] rounded-3xl p-10 text-white shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-2">
+              <div className="bg-gradient-to-br from-blue-700 to-indigo-600 rounded-3xl p-10 text-white shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-2">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
                     <Award className="w-8 h-8 text-white" />
@@ -574,7 +574,7 @@ export default function LandingPage() {
       {/* ============================================ */}
       {/* 7. DEPOIMENTOS - CARROSSEL */}
       {/* ============================================ */}
-      <section className="py-20 bg-gradient-to-br from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white relative overflow-hidden">
         
         {/* Efeitos de fundo */}
         <div className="absolute top-0 left-0 w-full h-full opacity-10">
