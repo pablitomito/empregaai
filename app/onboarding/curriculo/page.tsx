@@ -739,13 +739,19 @@ export default function CurriculoBuilder() {
                   </p>
                 </div>
 
-                  <Button 
-                    onClick={() => setStep(2)} 
-                    disabled={!isStep1Complete} 
-                    className="w-full h-12 text-lg"
-                  >
-                    Próximo: Experiência →
-                  </Button>
+              {/* SUBSTITUA TODO O SEU BOTÃO POR ISSO */}
+                <button
+                  type="button"
+                  onClick={() => {
+                  setStep(2);
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }, 10);
+                }}
+                  className="w-full h-12 text-lg bg-blue-600 text-white font-medium rounded-xl shadow-lg transition-all active:scale-95"
+                >
+                  Próximo: Experiência →
+                </button>
                 </CardContent>
               </Card>
             )}
@@ -976,10 +982,15 @@ export default function CurriculoBuilder() {
 
                   {/* Navegação */}
                   <div className="flex gap-4 mt-6">
-                    <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+                    <Button variant="outline" onClick={() => setStep(1)}
+                     className="flex-1 bg-white border-blue-300 text-slate-800 hover:border-blue-400
+                     shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 
+                     transition-all duration-300">
                       ← Anterior
                     </Button>
-                    <Button onClick={() => setStep(3)} className="flex-1">
+                    <Button onClick={() => setStep(3)} className="flex-1 bg-white border-blue-300 text-slate-800 hover:border-blue-400
+                     shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 
+                     transition-all duration-300">
                       Próximo: Formação →
                     </Button>
                   </div>
@@ -1070,7 +1081,7 @@ export default function CurriculoBuilder() {
                   {/* Botão adicionar */}
                   <button
                     onClick={addEducation}
-                    className="w-full py-6 rounded-xl border-2 border-dashed border-purple-400 bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold transition-all hover:border-solid hover:shadow-lg flex items-center justify-center gap-3"
+                    className="w-full py-6 rounded-xl border-2 border-dashed border-blue-700 bg-purple-50 hover:bg-purple-100 text-blue-700 font-semibold transition-all hover:border-solid hover:shadow-lg flex items-center justify-center gap-3"
                   >
                     <Plus className="w-5 h-5" />
                     <span>Adicionar Formação</span>
@@ -1078,10 +1089,14 @@ export default function CurriculoBuilder() {
 
                   {/* Navegação */}
                   <div className="flex gap-4 mt-6">
-                    <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                    <Button variant="outline" onClick={() => setStep(2)} className="flex-1 bg-white border-blue-300 text-slate-800 hover:border-blue-400
+                     shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 
+                     transition-all duration-300">
                       ← Anterior
                     </Button>
-                    <Button onClick={() => setStep(4)} className="flex-1">
+                    <Button onClick={() => setStep(4)} className="flex-1 bg-white border-blue-300 text-slate-800 hover:border-blue-400
+                     shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 
+                     transition-all duration-300">
                       Próximo: Competências →
                     </Button>
                   </div>
@@ -1124,8 +1139,9 @@ export default function CurriculoBuilder() {
 
           <Button 
             onClick={addSkill} 
-            className="h-12 w-full sm:w-auto px-4 text-sm sm:text-base"
-          >
+            className="flex-1 bg-white border-blue-300 text-slate-800 hover:border-blue-400
+                     shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 
+                     transition-all duration-300">
             Adicionar
           </Button>
         </div>
@@ -1224,8 +1240,9 @@ export default function CurriculoBuilder() {
 
           <Button 
             onClick={addLanguage} 
-            className="h-12 w-full sm:w-auto px-4 text-sm sm:text-base"
-          >
+            className="flex-1 bg-white border-blue-300 text-slate-800 hover:border-blue-400
+                     shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 
+                     transition-all duration-300">
             Adicionar
           </Button>
         </div>
@@ -1295,30 +1312,20 @@ export default function CurriculoBuilder() {
       ============================ */}
       <div className="flex flex-col gap-3 pt-4 border-t">
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button variant="outline" onClick={() => setStep(3)} className="flex-1 h-12">
+          <Button variant="outline" onClick={() => setStep(3)} className="flex-1 bg-white border-blue-300 text-slate-800 hover:border-blue-400
+                     shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 
+                     transition-all duration-300">
             ← Anterior
           </Button>
 
           <Button 
             type="button" 
             onClick={() => router.push("/onboarding/checkout")} 
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold h-12"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold h-19"
           >
             Obter o meu currículo agora
           </Button>
         </div>
-
-        <Button 
-          type="button" 
-          variant="outline" 
-          disabled={!resumeData.fullName || loadingLetter} 
-          onClick={handleGenerateLetter}
-          className="h-12"
-        >
-          {loadingLetter ? "A gerar carta de apresentação..." : "Gerar Carta de Apresentação"}
-        </Button>
-
-      
       </div>
 
     </CardContent>
@@ -1337,7 +1344,7 @@ export default function CurriculoBuilder() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-lg flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full animate-pulse ${isUpdating ? 'bg-yellow-500' : 'bg-green-500'}`} />
-                  {isUpdating ? 'Atualizando...' : 'Visualização em Tempo Real'}
+                  {isUpdating ? 'Atualizando...' : 'Modelo base para visualização'}
                 </h3>
               </div>
 
@@ -1363,7 +1370,7 @@ export default function CurriculoBuilder() {
 
                     {/* Info Principal */}
                     <div className="flex-1 text-white">
-                      <h2 className="text-3xl font-bold mb-2 tracking-tight">
+                      <h2 className="text-3xl font-bold mb-2 tracking-tight text-white">
                         {previewData.fullName || "Seu Nome Completo"}
                       </h2>
                       <p className="text-blue-100 text-lg font-medium mb-4">
@@ -1575,18 +1582,12 @@ export default function CurriculoBuilder() {
                   </Button>
                 ) : (
                   <>
-                    <Button disabled className="bg-gray-200 text-gray-500 cursor-not-allowed h-12 w-full">
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      Baixar Currículo (Premium)
-                    </Button>
                     <Button 
                       onClick={() => router.push("/onboarding/checkout")} 
                       className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-12 w-full shadow-lg hover:shadow-xl transition-all"
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
-                      Receber o meu curriculo e me candidatar para as vagas
+                      Receber o meu curriculo e me candidatar
                     </Button>
                   </>
                 )}

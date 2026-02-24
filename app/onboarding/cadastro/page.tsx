@@ -200,7 +200,7 @@ export default function CadastroPage() {
             
             {/* Título Principal */}
             <div>
-              <h2 className="text-4xl font-bold mb-4 leading-tight">
+              <h2 className="text-4xl font-bold mb-4 leading-tight text-white">
                 O seu próximo capítulo profissional começa aqui.
               </h2>
             </div>
@@ -214,7 +214,7 @@ export default function CadastroPage() {
                   <Zap className="w-6 h-6 text-emerald-300" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-1">Criação Instantânea</h3>
+                  <h3 className="font-bold text-lg mb-1 text-white">Criação Instantânea</h3>
                   <p className="text-blue-100">
                     O seu currículo otimizado para o mercado português em segundos.
                   </p>
@@ -227,7 +227,7 @@ export default function CadastroPage() {
                   <Target className="w-6 h-6 text-purple-300" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-1">Inteligência Adaptativa</h3>
+                  <h3 className="font-bold text-lg mb-1 text-white">Inteligência Adaptativa</h3>
                   <p className="text-blue-100">
                     A nossa IA reescreve o seu perfil para cada candidatura específica.
                   </p>
@@ -240,7 +240,7 @@ export default function CadastroPage() {
                   <FileText className="w-6 h-6 text-blue-300" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-1">Cartas que Convencem</h3>
+                  <h3 className="font-bold text-lg mb-1 text-white">Cartas que Convencem</h3>
                   <p className="text-blue-100">
                     Geramos cartas de apresentação que os recrutadores realmente leem.
                   </p>
@@ -253,7 +253,7 @@ export default function CadastroPage() {
                   <Radar className="w-6 h-6 text-orange-300" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-1">Radar de Vagas</h3>
+                  <h3 className="font-bold text-lg mb-1 text-white">Radar de Vagas</h3>
                   <p className="text-blue-100">
                     Monitorizamos as maiores empresas de Portugal 24/7 por si.
                   </p>

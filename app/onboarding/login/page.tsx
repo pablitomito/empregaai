@@ -133,7 +133,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             
             {/* Título Principal */}
             <div>
-              <h2 className="text-4xl font-bold mb-4 leading-tight">
+              <h2 className="text-4xl font-bold mb-4 leading-tight text-white">
                 Bom tê-lo de volta à sua evolução profissional.
               </h2>
               <p className="text-xl text-blue-100 leading-relaxed">
