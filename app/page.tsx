@@ -1,8 +1,6 @@
-// emprega-ai-frontend/app/page.tsx
-// LANDING PAGE PROFISSIONAL - SEGUINDO DOCUMENTO DE COPYWRITING
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
@@ -21,12 +19,16 @@ import {
   Quote,
   Award,
   Clock,
-  Heart
+  Heart,
+  Check
 } from 'lucide-react';
 
 export default function LandingPage() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [currentTemplate, setCurrentTemplate] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const testimonials = [
     {
@@ -50,12 +52,36 @@ export default function LandingPage() {
   ];
 
   const templates = [
-    { name: "Modern Professional", color: "from-blue-500 to-purple-500" },
-    { name: "Creative Bold", color: "from-purple-500 to-pink-500" },
-    { name: "Executive Minimal", color: "from-gray-700 to-gray-900" },
-    { name: "Tech Innovator", color: "from-emerald-500 to-teal-500" }
+    { 
+      title: 'O Executivo', 
+      desc: 'Ideal para cargos de gestão e finanças',
+      src: '/templates/capturartemplate1.PNG', 
+      tag: 'Mais Popular',
+      features: ['ATS Optimizado', 'Layout Formal', 'Destaque em Resultados']
+    },
+    { 
+      title: 'O Tech-Modern', 
+      desc: 'Focado em programadores e áreas de TI',
+      src: '/templates/capturartemplate2.PNG', 
+      tag: 'IA Optimized',
+      features: ['Skills Destacadas', 'GitHub Integration', 'Projetos em Foco']
+    },
+    { 
+      title: 'O Criativo', 
+      desc: 'Para designers e áreas de marketing',
+      src: '/templates/capturartemplate3.PNG', 
+      tag: 'Impacto Visual',
+      features: ['Portfolio Visual', 'Design Ousado', 'Personalização Total']
+    },
+    { 
+      title: 'O Criativo', 
+      desc: 'Para designers e áreas de marketing',
+      src: '/templates/capturartemplate4.PNG', 
+      tag: 'Impacto Visual',
+      features: ['Portfolio Visual', 'Design Ousado', 'Personalização Total']
+    },
   ];
-/// hahahahaha
+
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
   };
@@ -64,6 +90,7 @@ export default function LandingPage() {
     setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
+  // Navegação do carrossel de templates
   const nextTemplate = () => {
     setCurrentTemplate((prev) => (prev + 1) % templates.length);
   };
@@ -72,19 +99,55 @@ export default function LandingPage() {
     setCurrentTemplate((prev) => (prev - 1 + templates.length) % templates.length);
   };
 
+  // Touch handlers para swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      nextTemplate();
+    }
+    if (isRightSwipe) {
+      prevTemplate();
+    }
+
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
+  // Auto scroll no mobile
+  useEffect(() => {
+    if (carouselRef.current) {
+      const scrollPosition = currentTemplate * carouselRef.current.offsetWidth;
+      carouselRef.current.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentTemplate]);
+
   return (
     <main className="min-h-screen bg-white">
       
       {/* ============================================ */}
-      {/* 1. HERO SECTION - A PRIMEIRA IMPRESSÃO */}
+      {/* 1. HERO SECTION */}
       {/* ============================================ */}
       <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 text-white">
-        {/* Padrão de fundo decorativo */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-[url('/grid.svg')] bg-repeat"></div>
         </div>
         
-        {/* Efeitos de luz */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/30 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400/30 rounded-full blur-3xl"></div>
         
@@ -92,10 +155,8 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               
-              {/* Coluna Esquerda - Texto */}
               <div className="text-center lg:text-left space-y-8 animate-fadeIn">
                 
-                {/* Badge superior */}
                 <div className="inline-block">
                   <div className="bg-emerald-500/20 border border-emerald-400/40 rounded-full px-5 py-2.5 text-sm font-semibold text-emerald-200 backdrop-blur-sm">
                     <span className="flex items-center gap-2">
@@ -105,7 +166,6 @@ export default function LandingPage() {
                   </div>
                 </div>
                 
-                {/* H1 - Título Principal */}
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
                   O Seu Próximo Emprego em Portugal Encontrado Por{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-300">
@@ -113,14 +173,12 @@ export default function LandingPage() {
                   </span>
                 </h1>
                 
-                {/* H2 - Subtítulo */}
                 <p className="text-lg md:text-xl lg:text-2xl text-blue-100 leading-relaxed font-light">
                   Pare de enviar o mesmo currículo para toda a gente. O Emprega.AI analisa o seu perfil e cria{' '}
                   <strong className="text-white font-semibold">candidaturas personalizadas e únicas</strong> para centenas de vagas compatíveis.{' '}
                   <strong className="text-emerald-300 font-semibold">Deixe a IA trabalhar enquanto você descansa.</strong>
                 </p>
                 
-                {/* CTA Principal */}
                 <div className="space-y-4">
                   <Link 
                     href="onboarding/cadastro"
@@ -136,7 +194,6 @@ export default function LandingPage() {
                   </p>
                 </div>
                 
-                {/* Estatísticas rápidas */}
                 <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/20">
                   <div className="text-center">
                     <div className="text-3xl md:text-4xl font-bold text-emerald-300">93%</div>
@@ -153,10 +210,8 @@ export default function LandingPage() {
                 </div>
               </div>
               
-              {/* Coluna Direita - Ilustração */}
               <div className="hidden lg:block relative animate-slideInRight">
                 <div className="relative z-10">
-                  {/* Mockup de CV */}
                   <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 transform rotate-2 hover:rotate-0 transition-transform duration-500">
                     <div className="flex items-start gap-4 mb-6">
                       <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
@@ -186,13 +241,11 @@ export default function LandingPage() {
                     </div>
                   </div>
                   
-                  {/* Badge de IA */}
                   <div className="absolute -top-6 -right-6 bg-emerald-500 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 animate-pulse-glow">
                     <Sparkles className="w-5 h-5" />
                     <span className="font-bold">IA Personalizada</span>
                   </div>
                   
-                  {/* Indicador de match */}
                   <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-2xl p-4 border border-gray-100">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -206,7 +259,6 @@ export default function LandingPage() {
                   </div>
                 </div>
                 
-                {/* Efeitos decorativos */}
                 <div className="absolute top-20 -left-20 w-40 h-40 bg-emerald-400/20 rounded-full blur-3xl"></div>
                 <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-purple-400/20 rounded-full blur-3xl"></div>
               </div>
@@ -216,232 +268,377 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================ */}
-      {/* 2. O PROBLEMA (AGITAÇÃO) */}
+      {/* 3. COMO FUNCIONA - TIMELINE */}
       {/* ============================================ */}
-      <section className="py-20 bg-[#F8FAFC]">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            
-            {/* Título da seção */}
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 text-center mb-12">
-              Você tem potencial. Então, por que o telefone não toca?
+      <section className="py-12 bg-gray-50 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          
+          <div className="text-center mb-1">
+            <h2 className="text-4xl md:text-2xl font-black text-blue-700 mb-4 tracking-tight">
+              Nunca foi tão fácil conseguir o seu emprego
             </h2>
+          </div>
+
+          <div className="max-w-xl mx-auto relative">
             
-            {/* Card do problema */}
-            <div className="bg-slate-900 rounded-3xl shadow-xl p-8 md:p-12 border border-slate-800">
-              <p className="text-lg md:text-xl text-slate-300 leading-relaxed mb-8">
-                Cansado de enviar dezenas de currículos e ser ignorado? O problema não é você, 
-                é o "jogo" dos recrutadores. Empresas recebem{' '}
-                <strong className="text-blue-600 font-bold">milhares de candidaturas iguais</strong>. 
-                Se o seu currículo não contiver as palavras-chave exatas daquela vaga específica, 
-                ele vai para o lixo antes mesmo de ser lido por um humano.
-              </p>
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 -translate-x-1/2">
+              <div className="absolute top-0 left-0 w-full bg-gradient-to-b from-blue-600 to-cyan-500 transition-all duration-1000 ease-out animate-timeline-progress" />
+            </div>
+
+            <div className="space-y-6 md:space-y-12">
               
-              {/* Destaque da verdade dura */}
-              <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-r-xl p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">⚠️</span>
+              <div className="relative group">
+                <div className="md:grid md:grid-cols-2 md:gap-12 items-center">
+                  
+                  <div className="hidden md:flex justify-end items-center relative">
+                    <div className="w-16 h-16 bg-white border-4 border-blue-600 rounded-full flex items-center justify-center font-bold text-2xl text-blue-600 shadow-lg relative z-10 group-hover:scale-110 transition-transform">
+                      1
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-lg font-bold text-red-900 mb-2">
-                      A Verdade Dura:
+
+                  <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all group-hover:-translate-y-1">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 rounded-xl mb-6 group-hover:bg-blue-100 transition-colors">
+                      <Target className="w-7 h-7 text-blue-600" />
+                    </div>
+
+                    <div className="md:hidden inline-flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-full text-sm font-semibold text-blue-600 mb-4">
+                      Passo 1
+                    </div>
+
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                      Crie o seu perfil
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed mb-6">
+                      Preencha os seus dados profissionais uma única vez. A nossa IA aprende o seu perfil e objetivos de carreira.
                     </p>
-                    <p className="text-red-800 text-lg">
-                      Currículos genéricos não funcionam mais. Você precisa de personalização em escala.
-                    </p>
+
+                    <div className="space-y-2">
+                      {[
+                        'Onboarding em 5 minutos',
+                        'Importação automática do LinkedIn',
+                        'Sugestões inteligentes de skills'
+                      ].map((feature, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
+
+              <div className="relative group">
+                <div className="md:grid md:grid-cols-2 md:gap-12 items-center">
+                  
+                  <div className="md:col-start-1 bg-white rounded-2xl p-8 shadow-sm border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all group-hover:-translate-y-1">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 rounded-xl mb-6 group-hover:bg-blue-100 transition-colors">
+                      <Sparkles className="w-7 h-7 text-blue-600" />
+                    </div>
+
+                    <div className="md:hidden inline-flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-full text-sm font-semibold text-blue-600 mb-4">
+                      Passo 2
+                    </div>
+
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                      A IA trabalha por si
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed mb-6">
+                      Monitorizamos milhares de vagas diariamente. Para cada oportunidade compatível, criamos um currículo personalizado.
+                    </p>
+
+                    <div className="space-y-2">
+                      {[
+                        'Análise de 50+ portais de emprego',
+                        'CV otimizado para cada vaga',
+                        'Keywords específicas do recrutador'
+                      ].map((feature, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="hidden md:flex justify-start items-center relative md:col-start-2">
+                    <div className="w-16 h-16 bg-white border-4 border-blue-600 rounded-full flex items-center justify-center font-bold text-2xl text-blue-600 shadow-lg relative z-10 group-hover:scale-110 transition-transform">
+                      2
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative group">
+                <div className="md:grid md:grid-cols-2 md:gap-12 items-center">
+                  
+                  <div className="hidden md:flex justify-end items-center relative">
+                    <div className="w-16 h-16 bg-white border-4 border-blue-600 rounded-full flex items-center justify-center font-bold text-2xl text-blue-600 shadow-lg relative z-10 group-hover:scale-110 transition-transform">
+                      3
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all group-hover:-translate-y-1">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 rounded-xl mb-6 group-hover:bg-blue-100 transition-colors">
+                      <Mail className="w-7 h-7 text-blue-600" />
+                    </div>
+
+                    <div className="md:hidden inline-flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-full text-sm font-semibold text-blue-600 mb-4">
+                      Passo 3
+                    </div>
+
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                      Carta de apresentação única
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed mb-6">
+                      Para cada candidatura, geramos uma carta persuasiva e contextualizada que destaca porque você é o candidato ideal.
+                    </p>
+
+                    <div className="space-y-2">
+                      {[
+                        'Adaptada à cultura da empresa',
+                        'Tom profissional e convincente',
+                        'Highlights dos seus pontos fortes'
+                      ].map((feature, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative group">
+                <div className="md:grid md:grid-cols-2 md:gap-12 items-center">
+                  
+                  <div className="md:col-start-1 bg-white rounded-2xl p-8 shadow-sm border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all group-hover:-translate-y-1">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 rounded-xl mb-6 group-hover:bg-blue-100 transition-colors">
+                      <Send className="w-7 h-7 text-blue-600" />
+                    </div>
+
+                    <div className="md:hidden inline-flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-full text-sm font-semibold text-blue-600 mb-4">
+                      Passo 4
+                    </div>
+
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                      Enviamos tudo automaticamente
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed mb-6">
+                      As candidaturas são enviadas diretamente para as empresas. Você acompanha tudo pelo painel e aguarda as entrevistas.
+                    </p>
+
+                    <div className="space-y-2">
+                      {[
+                        'Até 50 candidaturas por dia',
+                        'Tracking em tempo real',
+                        'Notificações de respostas'
+                      ].map((feature, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="hidden md:flex justify-start items-center relative md:col-start-2">
+                    <div className="w-16 h-16 bg-white border-4 border-blue-600 rounded-full flex items-center justify-center font-bold text-2xl text-blue-600 shadow-lg relative z-10 group-hover:scale-110 transition-transform">
+                      4
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
+
+          <div className="text-center mt-5">
+            <p className="text-sm text-gray-500 mb-6">
+              Em média, os nossos utilizadores recebem a primeira resposta em 7 dias
+            </p>
+            <Link 
+              href="onboarding/cadastro"
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-cyan-500/30 transition-all transform hover:scale-105"
+            >
+              Conseguir meu emprego dos sonhos
+              <ArrowRight className="w-6 h-6" />
+            </Link>
+          </div>
+
         </div>
       </section>
 
+      <style jsx>{`
+        @keyframes timeline-progress {
+          from { height: 0%; }
+          to { height: 100%; }
+        }
+        .animate-timeline-progress {
+          height: 0%;
+          animation: timeline-progress 2s ease-out forwards;
+          animation-delay: 0.5s;
+        }
+      `}</style>
+
       {/* ============================================ */}
-      {/* 3. A SOLUÇÃO (COMO FUNCIONA) */}
+      {/* 4. LOGOS EMPRESAS */}
       {/* ============================================ */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section className="py-6 bg-white border-b border-gray-100 overflow-hidden">
+        <div className="container mx-auto px-4 mb-10">
+          <p className="text-center text-1xl font-normal text-blue-700 ">
+              os nossos talentos são contratados por gigantes:
+          </p>
+        </div>
+
+        <div className="relative flex overflow-x-hidden">
+          <div className="animate-marquee flex items-center">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3 md:gap-24 px-2 md:px-6">
+                {[
+                  { name: 'LVMH', src: '/logos/lv.svg', width: 50 },
+                  { name: 'TAP', src: '/logos/tap.svg', width: 50 },
+                  { name: 'NOS', src: '/logos/nos.svg', width: 50 },
+                  { name: 'Betano', src: '/logos/betano.svg', width: 50 },
+                  { name: 'Farfetch', src: '/logos/images.png', width: 50 },
+                  { name: 'Amazon', src: '/logos/amazon.svg', width: 50 },
+                  { name: 'Rolex', src: '/logos/rolex.svg', width: 50 },
+                  { name: 'BYD', src: '/logos/byd.svg', width: 50 },
+                  { name: 'Microsoft', src: '/logos/microsoft.svg', width: 50 },
+                ].map((company, idx) => (
+                  <div 
+                    key={`${i}-${idx}`} 
+                    className="flex-shrink-0 flex items-center justify-center transition-transform hover:scale-110 duration-300"
+                  >
+                    <div style={{ width: company.width, height: '30px', position: 'relative' }}>
+                      <Image 
+                        src={company.src} 
+                        alt={`Logo ${company.name}`}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-white to-transparent z-10"></div>
+          <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-white to-transparent z-10"></div>
+        </div>
+        
+      </section>
+      {/* ============================================ */}
+      {/* 6. TEMPLATES COM CARROSSEL MOBILE */}
+      {/* ============================================ */}
+      <section className="py-6 bg-sky-100 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
           
-          {/* Título da seção */}
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Como o Emprega.AI coloca você na frente da concorrência
+            <h2 className="text-4xl md:text-5xl font-black text-blue-700 mb-4 tracking-tight">
+              Design profissional para candidatos premium
             </h2>
-            <p className="text-xl text-gray-600">
-              4 passos simples para transformar a sua procura de emprego
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Modelos desenhados por especialistas em RH para passar filtros ATS e impressionar gestores
             </p>
           </div>
-          
-          {/* 4 Passos com ícones */}
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              
-              {/* Passo 1 - Perfil Inteligente */}
-              <div className="relative group">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-8 text-center hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-blue-300">
-                  
-                  {/* Número do passo */}
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-[#2563EB] to-[#4F46E5] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
-                    1
+
+          <div className="relative">
+            
+            {/* MOBILE - Carrossel */}
+            <div className="md:hidden">
+              <div 
+                ref={carouselRef}
+                className="flex overflow-x-hidden"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                {templates.map((template, idx) => (
+                  <div
+                    key={idx}
+                    className="min-w-full px-4"
+                    style={{ 
+                      transform: `translateX(-${currentTemplate * 100}%)`, 
+                      transition: 'transform 0.5s ease-out' 
+                    }}
+                  >
+                    <TemplateCard template={template} />
                   </div>
-                  
-                  {/* Ícone */}
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <Target className="w-10 h-10 text-white" />
-                  </div>
-                  
-                  {/* Texto */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
-                    Perfil Inteligente
-                  </h3>
-                  <p className="text-gray-700">
-                    Você preenche os seus dados e objetivos apenas uma vez.
-                  </p>
-                </div>
+                ))}
               </div>
 
-              {/* Passo 2 - Hiper-Personalização */}
-              <div className="relative group">
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl p-8 text-center hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-purple-300">
-                  
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-[#2563EB] to-[#4F46E5] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
-                    2
-                  </div>
-                  
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <Sparkles className="w-10 h-10 text-white" />
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
-                    Hiper-Personalização
-                  </h3>
-                  <p className="text-gray-700">
-                    A nossa IA analisa vagas abertas em tempo real e reescreve o seu currículo especificamente para cada uma delas, destacando o que aquele recrutador quer ler.
-                  </p>
-                </div>
-              </div>
+              {/* Controles Mobile */}
+              <div className="flex items-center justify-center gap-4 mt-8">
+                <button
+                  onClick={prevTemplate}
+                  className="w-12 h-12 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center hover:border-blue-600 hover:bg-blue-50 transition-all"
+                  aria-label="Template anterior"
+                >
+                  <ChevronLeft className="w-5 h-5 text-gray-700" />
+                </button>
 
-              {/* Passo 3 - Carta Automática */}
-              <div className="relative group">
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-3xl p-8 text-center hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-emerald-300">
-                  
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-[#2563EB] to-[#4F46E5] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
-                    3
-                  </div>
-                  
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <Mail className="w-10 h-10 text-white" />
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
-                    Carta de Apresentação Automática
-                  </h3>
-                  <p className="text-gray-700">
-                    Além do CV, geramos uma carta de apresentação persuasiva e única para cada candidatura.
-                  </p>
+                <div className="flex gap-2">
+                  {templates.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentTemplate(idx)}
+                      className={`h-2 rounded-full transition-all ${
+                        idx === currentTemplate 
+                          ? 'w-8 bg-blue-600' 
+                          : 'w-2 bg-gray-300'
+                      }`}
+                      aria-label={`Ir para template ${idx + 1}`}
+                    />
+                  ))}
                 </div>
-              </div>
 
-              {/* Passo 4 - Disparo Automático */}
-              <div className="relative group">
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-3xl p-8 text-center hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-transparent hover:border-orange-300">
-                  
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-[#2563EB] to-[#4F46E5] text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg group-hover:scale-110 transition-transform">
-                    4
-                  </div>
-                  
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <Send className="w-10 h-10 text-white" />
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
-                    Disparo Automático
-                  </h3>
-                  <p className="text-gray-700">
-                    Nós enviamos a sua candidatura. Você só precisa ficar atento ao telefone.
-                  </p>
-                </div>
+                <button
+                  onClick={nextTemplate}
+                  className="w-12 h-12 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center hover:border-blue-600 hover:bg-blue-50 transition-all"
+                  aria-label="Próximo template"
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-700" />
+                </button>
               </div>
             </div>
+
+            {/* DESKTOP - Grid */}
+            <div className="hidden md:grid md:grid-cols-3 gap-8">
+              {templates.map((template, idx) => (
+                <TemplateCard key={idx} template={template} />
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center mt-16">
+            <Link 
+              href="/todos-os-modelos" 
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold transition-colors group"
+            >
+              Ver todos os +20 modelos disponíveis
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
       </section>
 
       {/* ============================================ */}
-      {/* 4. PROVA SOCIAL (AUTORIDADE) - EMPRESAS */}
-      {/* ============================================ */}
-      {/* ============================================ */}
-{/* 4. PROVA SOCIAL (AUTORIDADE) - EMPRESAS (CARROSSEL) */}
-{/* ============================================ */}
-<section className="py-20 bg-white border-b border-gray-100 overflow-hidden">
-  <div className="container mx-auto px-4 mb-10">
-    <p className="text-center text-2xl font-semibold text-gray-700 uppercase tracking-widest">
-      Os nossos talentos são contratados por gigantes:
-    </p>
-  </div>
-
-  {/* Container do Carrossel */}
-  <div className="relative flex overflow-x-hidden">
-    <div className="animate-marquee flex items-center">
-      {/* Lista de Logos - Renderizada 2 vezes para o loop infinito */}
-      {[...Array(2)].map((_, i) => (
-        <div key={i} className="flex items-center gap-12 md:gap-24 px-6 md:px-12">
-          {[
-            { name: 'LVMH', src: '/logos/lv.svg', width: 140 },
-            { name: 'TAP', src: '/logos/tap.svg', width: 120 },
-            { name: 'NOS', src: '/logos/nos.svg', width: 100 },
-            { name: 'Betano', src: '/logos/betano.svg', width: 140 },
-            { name: 'Betano', src: '/logos/images.png', width: 140 },
-            { name: 'Amazon', src: '/logos/amazon.svg', width: 130 },
-            { name: 'Rolex', src: '/logos/rolex.svg', width: 120 },
-            { name: 'BYD', src: '/logos/byd.svg', width: 110 },
-            { name: 'Microsoft', src: '/logos/microsoft.svg', width: 150 },
-          ].map((company, idx) => (
-            <div 
-              key={`${i}-${idx}`} 
-              className="flex-shrink-0 flex items-center justify-center transition-transform hover:scale-110 duration-300"
-            >
-              <div style={{ width: company.width, height: '60px', position: 'relative' }}>
-                <Image 
-                  src={company.src} 
-                  alt={`Logo ${company.name}`}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-
-    {/* Efeito de desfoque nas bordas para o logo não "sumir" bruscamente */}
-    <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-white to-transparent z-10"></div>
-    <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-white to-transparent z-10"></div>
-  </div>
-</section>
-      {/* ============================================ */}
-      {/* 5. BENEFÍCIOS E RESULTADOS */}
+      {/* 5. BENEFÍCIOS */}
       {/* ============================================ */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           
-          {/* Título */}
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Diga adeus à precariedade.{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2563EB] to-[#7C3AED]">
-                Construa a carreira que merece.
-              </span>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-blue-700 mb-4">
+              Diga adeus à precariedade. Construa a carreira que merece
             </h2>
           </div>
           
-          {/* 3 Colunas de benefícios */}
           <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
             
-            {/* Benefício 1 - Taxa de Sucesso */}
             <div className="group">
               <div className="bg-gradient-to-br from-blue-600 to-cyan-500 rounded-3xl p-10 text-white shadow-2xl hover:shadow-blue-500/50 transition-all transform hover:-translate-y-2">
                 <div className="flex items-center gap-4 mb-6">
@@ -457,7 +654,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Benefício 2 - Rapidez */}
             <div className="group">
               <div className="bg-gradient-to-br from-cyan-600 to-sky-500 rounded-3xl p-10 text-white shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:-translate-y-2">
                 <div className="flex items-center gap-4 mb-6">
@@ -473,7 +669,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Benefício 3 - Design Premium */}
             <div className="group">
               <div className="bg-gradient-to-br from-blue-700 to-indigo-600 rounded-3xl p-10 text-white shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-2">
                 <div className="flex items-center gap-4 mb-6">
@@ -492,209 +687,40 @@ export default function LandingPage() {
         </div>
       </section>
 
-     {/* ============================================ */}
-{/* 6. VITRINE (O PRODUTO) - TEMPLATES DE CV */}
-{/* ============================================ */}
-<section className="py-24 bg-gray-50">
-  <div className="container mx-auto px-4 text-center">
-    <div className="max-w-3xl mx-auto mb-16">
-      <h2 className="text-4xl font-extrabold text-gray-900 mb-6">
-        Design Premium para <span className="text-primary-blue">Candidatos Premium</span>
-      </h2>
-      <p className="text-xl text-gray-600">
-        Nossos modelos são desenhados por especialistas em RH para passar pelos filtros (ATS) 
-        e impressionar os gestores à primeira vista.
-      </p>
-    </div>
-
-    {/* Grid de Templates */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-      {[
-        { 
-          title: 'O Executivo', 
-          desc: 'Ideal para cargos de gestão e finanças.',
-          src: '/templates/Capturar.PNG', 
-          tag: 'Mais Popular'
-        },
-        { 
-          title: 'O Tech-Modern', 
-          desc: 'Focado em programadores e áreas de TI.',
-          src: '/templates/moderno.png', 
-          tag: 'IA Optimized'
-        },
-        { 
-          title: 'O Criativo', 
-          desc: 'Para designers e áreas de marketing.',
-          src: '/templates/criativo.png', 
-          tag: 'Impacto Visual'
-        },
-      ].map((template, idx) => (
-        <div key={idx} className="group bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transition-all hover:-translate-y-2 hover:shadow-2xl">
-          {/* Header do Card com Tag */}
-          <div className="relative h-[450px] overflow-hidden bg-gray-200">
-            <div className="absolute top-4 right-4 z-10 bg-primary-blue text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-              {template.tag}
-            </div>
-            
-            {/* Imagem do Currículo */}
-            <Image 
-              src={template.src} 
-              alt={template.title}
-              fill
-              className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
-            />
-            
-            {/* Overlay de Hover (Opcional) */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <button className="bg-white text-gray-900 font-bold py-3 px-6 rounded-lg shadow-lg">
-                Ver Modelo Completo
-              </button>
-            </div>
-          </div>
-
-          {/* Rodapé do Card */}
-          <div className="p-6 text-left">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{template.title}</h3>
-            <p className="text-gray-500 text-sm mb-4">{template.desc}</p>
-            <div className="flex items-center text-primary-blue font-semibold text-sm">
-              Conhecer este modelo <ArrowRight className="ml-2 w-4 h-4" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <div className="mt-12">
-      <Link href="/todos-os-modelos" className="text-gray-500 hover:text-primary-blue font-medium underline">
-        Ver todos os +20 modelos disponíveis
-      </Link>
-    </div>
-  </div>
-</section>
       {/* ============================================ */}
-      {/* 7. DEPOIMENTOS - CARROSSEL */}
+      {/* 8. CTA FINAL */}
       {/* ============================================ */}
-      <section className="py-20 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white relative overflow-hidden">
-        
-        {/* Efeitos de fundo */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-emerald-400 rounded-full blur-3xl"></div>
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          
-          {/* Título */}
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              Quem usou, foi contratado
-            </h2>
-            <p className="text-xl text-blue-100">
-              Histórias reais de pessoas que transformaram suas carreiras
-            </p>
-          </div>
-          
-          {/* Carrossel de Depoimentos */}
-          <div className="max-w-4xl mx-auto relative">
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 md:p-12 border border-white/20 shadow-2xl">
-              
-              {/* Ícone de aspas */}
-              <Quote className="w-16 h-16 text-emerald-400 mb-6" />
-              
-              {/* Texto do depoimento */}
-              <p className="text-xl md:text-2xl lg:text-3xl text-white leading-relaxed mb-8 font-light italic">
-                "{testimonials[currentTestimonial].text}"
-              </p>
-              
-              {/* Autor e controles */}
-              <div className="flex items-center justify-between flex-wrap gap-6">
-                <div>
-                  <p className="font-bold text-xl text-white mb-1">
-                    {testimonials[currentTestimonial].name}
-                  </p>
-                  <p className="text-blue-200">
-                    {testimonials[currentTestimonial].location} • {testimonials[currentTestimonial].role}
-                  </p>
-                </div>
-                
-                {/* Controles */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={prevTestimonial}
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-full transition-all"
-                  >
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <button
-                    onClick={nextTestimonial}
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-full transition-all"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            {/* Indicadores */}
-            <div className="flex justify-center gap-2 mt-8">
-              {testimonials.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-2 rounded-full transition-all ${
-                    i === currentTestimonial ? 'w-8 bg-emerald-400' : 'w-2 bg-white/30'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================ */}
-      {/* 8. RODAPÉ (FINAL CTA) */}
-      {/* ============================================ */}
-      <section className="py-24 bg-gray-900 text-white">
+      <section className="py-6 bg-white text-black">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             
-            {/* Título */}
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
               A sua carreira de sucesso está a um clique de distância
             </h2>
             
-            {/* Subtítulo */}
-            <p className="text-xl md:text-2xl text-gray-300 mb-12">
-              Não deixe para amanhã a vaga que pode ser preenchida hoje.
-            </p>
             
-            {/* CTA Gigante */}
             <Link 
               href="onboarding/cadastro"
-              className="inline-flex items-center gap-4 bg-[#10B981] hover:bg-[#059669] text-white px-12 py-6 rounded-2xl text-xl md:text-2xl font-bold shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:scale-105 hover:-translate-y-1"
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-cyan-500/30 transition-all transform hover:scale-105"
             >
-              Começar Teste Gratuito / Criar Meu Perfil
+              Criar meu perfil
               <ArrowRight className="w-8 h-8" />
             </Link>
             
-            {/* Texto de segurança */}
-            <p className="text-sm text-gray-400 mt-8">
-              ✅ Comece grátis • Sem cartão de crédito • Cancele quando quiser
-            </p>
           </div>
         </div>
       </section>
+      
 
       {/* ============================================ */}
-      {/* FOOTER FINAL */}
+      {/* FOOTER */}
       {/* ============================================ */}
       <footer className="bg-gray-950 text-gray-400 py-16 border-t border-gray-800">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             
-            {/* Grid de colunas */}
             <div className="grid md:grid-cols-4 gap-12 mb-12">
               
-              {/* Coluna 1 - Logo e Descrição */}
               <div className="md:col-span-2">
                 <h3 className="text-3xl font-bold text-white mb-4">EMPREGA.AI</h3>
                 <p className="text-gray-400 mb-6 leading-relaxed">
@@ -714,29 +740,6 @@ export default function LandingPage() {
                 </div>
               </div>
               
-              {/* Coluna 2 - Produto */}
-              <div>
-                <h4 className="font-bold text-white mb-4 text-lg">Produto</h4>
-                <ul className="space-y-3">
-                  <li>
-                    <Link href="/funcionalidades" className="hover:text-white transition-colors">
-                      Funcionalidades
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/pricing" className="hover:text-white transition-colors">
-                      Preços
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/templates" className="hover:text-white transition-colors">
-                      Templates
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-              
-              {/* Coluna 3 - Legal */}
               <div>
                 <h4 className="font-bold text-white mb-4 text-lg">Legal</h4>
                 <ul className="space-y-3">
@@ -750,12 +753,10 @@ export default function LandingPage() {
                       Privacidade
                     </Link>
                   </li>
-                
                 </ul>
               </div>
             </div>
             
-            {/* Copyright */}
             <div className="border-t border-gray-800 pt-8 text-center">
               <p className="text-sm text-gray-500">
                 © 2026 EMPREGA.AI - Todos os direitos reservados • Feito em Portugal 🇵🇹
@@ -765,5 +766,62 @@ export default function LandingPage() {
         </div>
       </footer>
     </main>
+  );
+}
+
+// Componente do Card do Template
+function TemplateCard({ template }: { template: any }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div 
+      className="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-2xl hover:border-blue-200 transition-all duration-300"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="relative h-[450px] bg-gray-100 overflow-hidden">
+        
+        <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
+          {template.tag}
+        </div>
+        
+        <Image 
+          src={template.src} 
+          alt={template.title}
+          fill
+          className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+        />
+        
+        <div className={`absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/50 to-transparent transition-opacity duration-300 ${
+          isHovered ? 'opacity-100' : 'opacity-0'
+        }`}>
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+            <h4 className="font-semibold mb-3">O que está incluso:</h4>
+            <ul className="space-y-2">
+              {template.features.map((feature: string, i: number) => (
+                <li key={i} className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-cyan-400" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6">
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          {template.title}
+        </h3>
+        <p className="text-gray-600 text-sm mb-4">
+          {template.desc}
+        </p>
+        
+        <button className="inline-flex items-center gap-2 text-blue-600 font-semibold text-sm group-hover:gap-3 transition-all">
+          Ver modelo completo
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
   );
 }

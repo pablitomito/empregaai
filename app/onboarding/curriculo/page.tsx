@@ -1301,7 +1301,7 @@ export default function CurriculoBuilder() {
 
           <Button 
             type="button" 
-            onClick={() => router.push("/checkout")} 
+            onClick={() => router.push("/onboarding/checkout")} 
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold h-12"
           >
             Obter o meu currículo agora
@@ -1318,11 +1318,7 @@ export default function CurriculoBuilder() {
           {loadingLetter ? "A gerar carta de apresentação..." : "Gerar Carta de Apresentação"}
         </Button>
 
-        {!isPremium && (
-          <p className="text-xs text-red-500 text-center">
-            O download do currículo em PDF será liberado após o pagamento.
-          </p>
-        )}
+      
       </div>
 
     </CardContent>
@@ -1349,7 +1345,7 @@ export default function CurriculoBuilder() {
               <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
                 
                 {/* HEADER MODERNO COM GRADIENTE */}
-                <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-8 pb-12">
+                <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-500 p-8 pb-12">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
                   <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
                   
@@ -1586,11 +1582,11 @@ export default function CurriculoBuilder() {
                       Baixar Currículo (Premium)
                     </Button>
                     <Button 
-                      onClick={() => router.push("/checkout")} 
+                      onClick={() => router.push("/onboarding/checkout")} 
                       className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-12 w-full shadow-lg hover:shadow-xl transition-all"
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
-                      Fazer Upgrade para Premium
+                      Receber o meu curriculo e me candidatar para as vagas
                     </Button>
                   </>
                 )}

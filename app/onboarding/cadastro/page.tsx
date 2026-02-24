@@ -162,7 +162,7 @@ export default function CadastroPage() {
       {/* ============================================ */}
       {/* LADO ESQUERDO - BRANDING/MOTIVAÇÃO */}
       {/* ============================================ */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#2563EB] via-[#4F46E5] to-[#7C3AED] relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 relative overflow-hidden">
         
         {/* Padrão de grid tecnológico */}
         <div className="absolute inset-0 opacity-10">
@@ -502,7 +502,7 @@ export default function CadastroPage() {
             <button
               type="submit"
               disabled={isLoading || Object.keys(errors).length > 0}
-              className="w-full bg-[#10B981] hover:bg-[#059669] text-white py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
