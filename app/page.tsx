@@ -166,13 +166,12 @@ export default function LandingPage() {
                   </div>
                 </div>
                 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
+               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-white">
                   O Seu Próximo Emprego em Portugal Encontrado Por{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-300">
                     Inteligência Artificial
                   </span>
                 </h1>
-                
                 <p className="text-lg md:text-xl lg:text-2xl text-blue-100 leading-relaxed font-light">
                   Pare de enviar o mesmo currículo para toda a gente. O Emprega.AI analisa o seu perfil e cria{' '}
                   <strong className="text-white font-semibold">candidaturas personalizadas e únicas</strong> para centenas de vagas compatíveis.{' '}
@@ -647,7 +646,7 @@ export default function LandingPage() {
                   </div>
                   <div className="text-6xl font-extrabold">93%</div>
                 </div>
-                <h3 className="text-2xl font-bold mb-3">Taxa de Sucesso</h3>
+                <h3 className="text-2xl font-bold mb-3 text-white">Taxa de Sucesso</h3>
                 <p className="text-blue-100 leading-relaxed">
                   93% de taxa de empregabilidade entre os nossos utilizadores ativos.
                 </p>
@@ -662,7 +661,7 @@ export default function LandingPage() {
                   </div>
                   <div className="text-6xl font-extrabold">7</div>
                 </div>
-                <h3 className="text-2xl font-bold mb-3">Rapidez</h3>
+                <h3 className="text-2xl font-bold mb-3 text-white">Rapidez</h3>
                 <p className="text-emerald-100 leading-relaxed">
                   Os nossos candidatos começam a receber agendamentos de entrevistas, em média, nos primeiros 7 dias.
                 </p>
@@ -677,7 +676,7 @@ export default function LandingPage() {
                   </div>
                   <div className="text-2xl font-extrabold">Premium</div>
                 </div>
-                <h3 className="text-2xl font-bold mb-3">Design Premium</h3>
+                <h3 className="text-2xl font-bold mb-3 text-white">Design Premium</h3>
                 <p className="text-purple-100 leading-relaxed">
                   Currículos visualmente impactantes, otimizados para passar pelos robôs de RH (ATS) e encantar recrutadores humanos.
                 </p>
@@ -703,7 +702,7 @@ export default function LandingPage() {
               href="onboarding/cadastro"
               className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-cyan-500/30 transition-all transform hover:scale-105"
             >
-              Criar meu perfil
+              Criar meu perfil e começar a receber candidaturas personalizadas
               <ArrowRight className="w-8 h-8" />
             </Link>
             
