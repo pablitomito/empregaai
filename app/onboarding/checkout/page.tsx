@@ -23,7 +23,7 @@ export default function CheckoutPage() {
 
   const createCheckout = async (priceId: string) => {
   try {
-    const res = await fetch("/api/stripe/checkout", {
+    const res = await fetch("../config/stripe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ priceId }),
@@ -40,11 +40,11 @@ export default function CheckoutPage() {
 };
 
   const handleDistribute = () => {
-    createCheckout(process.env.STRIPE_PRICE_ID_DISTRIBUIR!);
+    createCheckout(process.env.STRIPE_PRICE_DISTRIBUIR!);
   };
 
   const handleDownload = () => {
-    createCheckout(process.env.STRIPE_PRICE_ID_PDF!);
+    createCheckout(process.env.STRIPE_PRICE_PDF!);
   };
 
   if (!isMounted) return null;
@@ -198,7 +198,7 @@ export default function CheckoutPage() {
               className="w-full text-lg h-14 text-white bg-blue-600 border-blue-300 hover:border-blue-400
                      shadow-lg shadow-blue-500
                      transition-all duration-300"
-              onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_DISTRIBUIR!)}
+              onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_PRICE_DISTRIBUIR!)}
               disabled={isPending}
             >
               {isPending ? "A processar..." : (

@@ -22,6 +22,8 @@ import {
   Heart,
   Check
 } from 'lucide-react';
+import Navbar from "../components/Navbar";
+
 
 export default function LandingPage() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -126,6 +128,7 @@ export default function LandingPage() {
     setTouchEnd(0);
   };
 
+ 
   // Auto scroll no mobile
   useEffect(() => {
     if (carouselRef.current) {
@@ -137,134 +140,78 @@ export default function LandingPage() {
     }
   }, [currentTemplate]);
 
+useEffect(() => {
+  import("./gradiente/gradiente.js");
+}, []);
+
   return (
+    
     <main className="min-h-screen bg-white">
+      <Navbar />
+      <section className="relative bg-white pt-20 pb-16 md:pt-28 md:pb-20 overflow-hidden">
+       <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-200/30 blur-[120px] rounded-full"></div>
+       <div className="absolute top-40 -right-32 w-96 h-96 bg-blue-100/30 blur-[120px] rounded-full"></div>
+
+
+  {/* Canvas do efeito visual */}
+  <canvas
+    id="gradient-canvas"
+    className="absolute inset-0 w-full h-full"
+    data-transition-in
+  ></canvas>
+
+        
+  {/* O gradiente sutil de fundo que eles usam */}
+  <div className="absolute top-0 inset-x-0 h-80 bg-gradient-to-b from-blue-50/50 to-transparent pointer-events-none"></div>
+
+  <div className="relative container mx-auto px-4">
+    <div className="max-w-4xl mx-auto text-center space-y-8">
       
-      {/* ============================================ */}
-      {/* 1. HERO SECTION */}
-      {/* ============================================ */}
-      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 text-white">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-repeat"></div>
-        </div>
-        
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400/30 rounded-full blur-3xl"></div>
-        
-        <div className="relative container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              
-              <div className="text-center lg:text-left space-y-8 animate-fadeIn">
-                
-                <div className="inline-block">
-                  <div className="bg-emerald-500/20 border border-emerald-400/40 rounded-full px-5 py-2.5 text-sm font-semibold text-emerald-200 backdrop-blur-sm">
-                    <span className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4" />
-                      Inteligência Artificial + Empregos Automatizados
-                    </span>
-                  </div>
-                </div>
-                
-               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-white">
-                  O Seu Próximo Emprego em Portugal Encontrado Por{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-300">
-                    Inteligência Artificial
-                  </span>
-                </h1>
-                <p className="text-lg md:text-xl lg:text-2xl text-blue-100 leading-relaxed font-light">
-                  Pare de enviar o mesmo currículo para toda a gente. O Emprega.AI analisa o seu perfil e cria{' '}
-                  <strong className="text-white font-semibold">candidaturas personalizadas e únicas</strong> para centenas de vagas compatíveis.{' '}
-                  <strong className="text-emerald-300 font-semibold">Deixe a IA trabalhar enquanto você descansa.</strong>
-                </p>
-                
-                <div className="space-y-4">
-                  <Link 
-                    href="onboarding/cadastro"
-                    className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-cyan-500/30 transition-all transform hover:scale-105"
-                  >
-                    Começar Meu Match Profissional
-                    <ArrowRight className="w-6 h-6" />
-                  </Link>
-                  
-                  <p className="text-sm text-blue-200 font-medium">
-                    <CheckCircle className="w-4 h-4 inline mr-1 text-emerald-400" />
-                    +5.000 utilizadores contratados este mês
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/20">
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold text-emerald-300">93%</div>
-                    <div className="text-xs md:text-sm text-blue-200 mt-1">Taxa de Sucesso</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold text-emerald-300">7 dias</div>
-                    <div className="text-xs md:text-sm text-blue-200 mt-1">Até 1ª Entrevista</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold text-emerald-300">50+</div>
-                    <div className="text-xs md:text-sm text-blue-200 mt-1">CVs por Dia</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="hidden lg:block relative animate-slideInRight">
-                <div className="relative z-10">
-                  <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 transform rotate-2 hover:rotate-0 transition-transform duration-500">
-                    <div className="flex items-start gap-4 mb-6">
-                      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
-                        JS
-                      </div>
-                      <div className="flex-1">
-                        <div className="h-5 bg-gray-300 rounded-lg w-3/4 mb-2"></div>
-                        <div className="h-4 bg-gray-200 rounded-lg w-1/2"></div>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3 mb-6">
-                      <div className="h-3 bg-gray-200 rounded w-full"></div>
-                      <div className="h-3 bg-gray-200 rounded w-5/6"></div>
-                      <div className="h-3 bg-gray-200 rounded w-4/6"></div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      <div className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">React</div>
-                      <div className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">Node.js</div>
-                      <div className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">TypeScript</div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="h-2 bg-gray-100 rounded w-full"></div>
-                      <div className="h-2 bg-gray-100 rounded w-4/5"></div>
-                    </div>
-                  </div>
-                  
-                  <div className="absolute -top-6 -right-6 bg-emerald-500 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 animate-pulse-glow">
-                    <Sparkles className="w-5 h-5" />
-                    <span className="font-bold">IA Personalizada</span>
-                  </div>
-                  
-                  <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-2xl p-4 border border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                        <Target className="w-6 h-6 text-emerald-600" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 font-medium">Match Score</div>
-                        <div className="text-2xl font-bold text-gray-900">98%</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="absolute top-20 -left-20 w-40 h-40 bg-emerald-400/20 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-purple-400/20 rounded-full blur-3xl"></div>
-              </div>
-            </div>
+      {/* Badge Superior */}
+      <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 text-sm font-medium text-blue-700">
+        <Sparkles className="w-4 h-4" />
+        <span>Otimizado para o mercado de Portugal</span>
+      </div>
+
+      {/* Título Principal (Tipografia Onest/Inter) */}
+      <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+        O Seu Copiloto de Carreira com <br />
+        <span className="text-blue-600">Inteligência Artificial</span>
+      </h1>
+
+      {/* Subtítulo */}
+      <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        Automatize a sua procura de emprego. O Emprega.AI cria currículos, cartas de apresentação e candidaturas personalizadas enquanto você foca nas entrevistas.
+      </p>
+
+      {/* Botões de Ação */}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <Link 
+          href="/signup"
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all shadow-md"
+        >
+          Começar Meu Mach Profissional
+        </Link>
+      </div>
+
+      {/* Prova Social Sutil */}
+      {/* Prova Social Sutil com Fotos Reais */}
+        <div className="pt-4 flex items-center justify-center gap-2 text-sm text-slate-500">
+          <div className="flex -space-x-2">
+            {/* Substitua os links abaixo pelas fotos reais dos seus usuários */}
+            <img src="/testemunhas/user.jpg" alt="Usuário 1" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+            <img src="/testemunhas/user2.jpg" alt="Usuário 2" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+            <img src="/testemunhas/user3.jpg" alt="Usuário 3" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+            <img src="/testemunhas/user1.jpg" alt="Usuário 1" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
           </div>
+          <span className="font-medium">+5.000 utilizadores em Portugal</span>
         </div>
-      </section>
+    </div>
+
+    {/* Imagem do Dashboard (O "Pulo do Gato" do UI/UX deles) */}
+    
+  </div>
+</section>
 
       {/* ============================================ */}
       {/* 3. COMO FUNCIONA - TIMELINE */}
