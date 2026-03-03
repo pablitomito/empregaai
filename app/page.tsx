@@ -187,7 +187,7 @@ useEffect(() => {
       {/* Botões de Ação */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
         <Link 
-          href="/signup"
+          href="onboarding/cadastro"
           className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all shadow-md"
         >
           Começar Meu Mach Profissional
@@ -406,7 +406,7 @@ useEffect(() => {
             </p>
             <Link 
               href="onboarding/cadastro"
-              className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-cyan-500/30 transition-all transform hover:scale-105"
+              className="inline-flex items-center gap-3 bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-cyan-500/30 transition-all transform hover:scale-105"
             >
               Conseguir meu emprego dos sonhos
               <ArrowRight className="w-6 h-6" />
@@ -431,59 +431,59 @@ useEffect(() => {
       {/* ============================================ */}
       {/* 4. LOGOS EMPRESAS */}
       {/* ============================================ */}
-      <section className="py-6 bg-white border-b border-gray-100 overflow-hidden">
-        <div className="container mx-auto px-4 mb-10">
-          <p className="text-center text-1xl font-normal text-blue-700 ">
-              os nossos talentos são contratados por gigantes:
-          </p>
-        </div>
+      <section className="py-2 bg-white border-b border-gray-100 overflow-hidden">
+  <div className="container mx-auto px-4 mb-10">
+    <p className="text-center text-lg font-medium text-blue-700">
+      Os nossos talentos são contratados por gigantes:
+    </p>
+  </div>
 
-        <div className="relative flex overflow-x-hidden">
-          <div className="animate-marquee flex items-center">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 md:gap-24 px-2 md:px-6">
-                {[
-                  { name: 'LVMH', src: '/logos/lv.svg', width: 50 },
-                  { name: 'TAP', src: '/logos/tap.svg', width: 50 },
-                  { name: 'NOS', src: '/logos/nos.svg', width: 50 },
-                  { name: 'Betano', src: '/logos/betano.svg', width: 50 },
-                  { name: 'Farfetch', src: '/logos/images.png', width: 50 },
-                  { name: 'Amazon', src: '/logos/amazon.svg', width: 50 },
-                  { name: 'Rolex', src: '/logos/rolex.svg', width: 50 },
-                  { name: 'BYD', src: '/logos/byd.svg', width: 50 },
-                  { name: 'Microsoft', src: '/logos/microsoft.svg', width: 50 },
-                ].map((company, idx) => (
-                  <div 
-                    key={`${i}-${idx}`} 
-                    className="flex-shrink-0 flex items-center justify-center transition-transform hover:scale-110 duration-300"
-                  >
-                    <div style={{ width: company.width, height: '30px', position: 'relative' }}>
-                      <Image 
-                        src={company.src} 
-                        alt={`Logo ${company.name}`}
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-white to-transparent z-10"></div>
-          <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-white to-transparent z-10"></div>
+  <div className="relative overflow-hidden">
+    <div className="flex w-max animate-marquee">
+      
+      {[...Array(2)].map((_, loopIndex) => (
+        <div key={loopIndex} className="flex items-center gap-16 px-8">
+          {[
+            { name: 'LVMH', src: '/logos/lv.svg' },
+            { name: 'TAP', src: '/logos/tap.svg' },
+            { name: 'NOS', src: '/logos/nos.svg' },
+            { name: 'Betano', src: '/logos/betano.svg' },
+            { name: 'Farfetch', src: '/logos/images.png' },
+            { name: 'Amazon', src: '/logos/amazon.svg' }, 
+            { name: 'Microsoft', src: '/logos/microsoft.svg' },
+            { name: 'Rolex', src: '/logos/rolex.svg' },
+          ].map((company, idx) => (
+            <div
+              key={`${loopIndex}-${idx}`}
+              className="flex-shrink-0 w-[100px] h-[40px] flex items-center justify-center transition-transform hover:scale-110 duration-300"
+            >
+              <Image
+                src={company.src}
+                alt={`Logo ${company.name}`}
+                width={120}
+                height={48}
+                className="object-contain"
+              />
+            </div>
+          ))}
         </div>
-        
-      </section>
+      ))}
+
+    </div>
+
+    {/* Fade lateral */}
+    <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10" />
+    <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10" />
+  </div>
+</section>
       {/* ============================================ */}
       {/* 6. TEMPLATES COM CARROSSEL MOBILE */}
       {/* ============================================ */}
-      <section className="py-6 bg-sky-100 relative overflow-hidden">
+      <section className="py-6 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
           
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-blue-700 mb-4 tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-black text-gray-950 mb-4 tracking-tight">
               Design profissional para candidatos premium
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -572,68 +572,6 @@ useEffect(() => {
       </section>
 
       {/* ============================================ */}
-      {/* 5. BENEFÍCIOS */}
-      {/* ============================================ */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-blue-700 mb-4">
-              Diga adeus à precariedade. Construa a carreira que merece
-            </h2>
-          </div>
-          
-          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-            
-            <div className="group">
-              <div className="bg-gradient-to-br from-blue-600 to-cyan-500 rounded-3xl p-10 text-white shadow-2xl hover:shadow-blue-500/50 transition-all transform hover:-translate-y-2">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                    <TrendingUp className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="text-6xl font-extrabold">93%</div>
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-white">Taxa de Sucesso</h3>
-                <p className="text-blue-100 leading-relaxed">
-                  93% de taxa de empregabilidade entre os nossos utilizadores ativos.
-                </p>
-              </div>
-            </div>
-
-            <div className="group">
-              <div className="bg-gradient-to-br from-cyan-600 to-sky-500 rounded-3xl p-10 text-white shadow-2xl hover:shadow-emerald-500/50 transition-all transform hover:-translate-y-2">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                    <Zap className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="text-6xl font-extrabold">7</div>
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-white">Rapidez</h3>
-                <p className="text-emerald-100 leading-relaxed">
-                  Os nossos candidatos começam a receber agendamentos de entrevistas, em média, nos primeiros 7 dias.
-                </p>
-              </div>
-            </div>
-
-            <div className="group">
-              <div className="bg-gradient-to-br from-blue-700 to-indigo-600 rounded-3xl p-10 text-white shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:-translate-y-2">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                    <Award className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="text-2xl font-extrabold">Premium</div>
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-white">Design Premium</h3>
-                <p className="text-purple-100 leading-relaxed">
-                  Currículos visualmente impactantes, otimizados para passar pelos robôs de RH (ATS) e encantar recrutadores humanos.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================ */}
       {/* 8. CTA FINAL */}
       {/* ============================================ */}
       <section className="py-6 bg-white text-black">
@@ -649,7 +587,7 @@ useEffect(() => {
               href="onboarding/cadastro"
               className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-cyan-500/30 transition-all transform hover:scale-105"
             >
-              Criar meu perfil e começar a receber candidaturas personalizadas
+              Começar a receber candidaturas personalizadas
               <ArrowRight className="w-8 h-8" />
             </Link>
             
@@ -661,41 +599,44 @@ useEffect(() => {
       {/* ============================================ */}
       {/* FOOTER */}
       {/* ============================================ */}
-      <footer className="bg-gray-950 text-gray-400 py-16 border-t border-gray-800">
+      <footer className="bg-white text-gray-400 py-16 border-t border-gray-800">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             
             <div className="grid md:grid-cols-4 gap-12 mb-12">
               
               <div className="md:col-span-2">
-                <h3 className="text-3xl font-bold text-white mb-4">EMPREGA.AI</h3>
-                <p className="text-gray-400 mb-6 leading-relaxed">
+                <h3 className="text-3xl font-black text-gray-950 mb-4">EmpregaAi</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
                   A plataforma de empregos mais inteligente de Portugal. 
                   Inteligência artificial trabalhando 24/7 para o seu sucesso profissional.
                 </p>
-                <div className="flex gap-4">
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <div className="flex gap-6">
+                  <a href="#" className="text-gray-600 hover:text-white transition-colors">
                     LinkedIn
                   </a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <a href="#" className="text-gray-600 hover:text-white transition-colors">
                     Instagram
                   </a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <a href="#" className="text-gray-600 hover:text-white transition-colors">
                     Facebook
+                  </a>
+                  <a href="#" className="text-gray-600 hover:text-white transition-colors">
+                    Twitter
                   </a>
                 </div>
               </div>
               
               <div>
-                <h4 className="font-bold text-white mb-4 text-lg">Legal</h4>
+                <h4 className="font-bold text-gray-800 mb-4 text-lg">Importante</h4>
                 <ul className="space-y-3">
                   <li>
-                    <Link href="/termos" className="hover:text-white transition-colors">
+                    <Link href="/termos" className="hover:text-gray-600 transition-colors">
                       Termos de Uso
                     </Link>
                   </li>
                   <li>
-                    <Link href="/privacidade" className="hover:text-white transition-colors">
+                    <Link href="/privacidade" className="hover:text-gray-600 transition-colors">
                       Privacidade
                     </Link>
                   </li>
@@ -704,7 +645,7 @@ useEffect(() => {
             </div>
             
             <div className="border-t border-gray-800 pt-8 text-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-600">
                 © 2026 EMPREGA.AI - Todos os direitos reservados • Feito em Portugal 🇵🇹
               </p>
             </div>

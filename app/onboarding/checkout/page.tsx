@@ -21,31 +21,59 @@ export default function CheckoutPage() {
     setIsMounted(true);
   }, []);
 
-  const createCheckout = async (priceId: string) => {
+  const createCheckout = async (type: "pdf" | "distribuir") => {
   try {
-    const res = await fetch("../config/stripe", {
+    setIsPending(true);
+
+    const userId = localStorage.getItem("userId");
+    const userData = JSON.parse(localStorage.getItem("cvData") || "{}");
+    const email = userData?.email;
+
+    // 1. Salvar dados do CV antes do pagamento
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cv/save-data`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ priceId }),
+      body: JSON.stringify({
+        userId,
+        userData,
+      }),
     });
 
-    const data = await res.json();
+    // 2. Criar sessão de checkout
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/checkout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        email,
+        type,
+      }),
+    });
+
+    const data = await response.json();
 
     if (data.url) {
       window.location.href = data.url;
+    } else {
+      alert("Erro ao iniciar pagamento.");
     }
+
   } catch (err) {
-    console.error(err);
+    console.error("Erro no checkout:", err);
+    alert("Erro inesperado.");
+  } finally {
+    setIsPending(false);
   }
+
 };
 
   const handleDistribute = () => {
-    createCheckout(process.env.STRIPE_PRICE_DISTRIBUIR!);
-  };
+  createCheckout("distribuir");
+};
 
-  const handleDownload = () => {
-    createCheckout(process.env.STRIPE_PRICE_PDF!);
-  };
+const handleDownload = () => {
+  createCheckout("pdf");
+};
 
   if (!isMounted) return null;
 
@@ -198,7 +226,7 @@ export default function CheckoutPage() {
               className="w-full text-lg h-14 text-white bg-blue-600 border-blue-300 hover:border-blue-400
                      shadow-lg shadow-blue-500
                      transition-all duration-300"
-              onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_PRICE_DISTRIBUIR!)}
+              onClick={() => createCheckout("distribuir")}
               disabled={isPending}
             >
               {isPending ? "A processar..." : (
@@ -250,7 +278,7 @@ export default function CheckoutPage() {
               className="w-full h-14 font-bold text-lg bg-white border-blue-300 text-slate-800 hover:border-blue-400
                      shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 
                      transition-all duration-300"
-              onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_PRICE_PDF!)}
+              onClick={() => createCheckout("pdf")}
               disabled={isPending}
             >
               {isPending ? "A processar..." : "Baixar agora — €1,99"}

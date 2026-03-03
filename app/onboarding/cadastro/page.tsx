@@ -502,7 +502,7 @@ export default function CadastroPage() {
             <button
               type="submit"
               disabled={isLoading || Object.keys(errors).length > 0}
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-cyan-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -511,7 +511,7 @@ export default function CadastroPage() {
                 </>
               ) : (
                 <>
-                  Desbloquear o meu Futuro
+                  Cadastrar
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
