@@ -50,7 +50,9 @@ export default function CheckoutPage() {
       }),
     });
 
-    const data = await response.json();
+    const text = await response.text();
+console.log("RAW RESPONSE:", text);
+    const data = JSON.parse(text);
 
     if (data.url) {
       window.location.href = data.url;
